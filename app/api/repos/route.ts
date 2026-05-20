@@ -11,8 +11,22 @@ export async function GET() {
       status: true,
       createdAt: true,
       url: true,
+      jobs: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { id: true },
+      },
     },
   });
 
-  return NextResponse.json({ repos });
+  const result = repos.map((repo) => ({
+    id: repo.id,
+    name: repo.name,
+    status: repo.status,
+    createdAt: repo.createdAt,
+    url: repo.url,
+    latestJobId: repo.jobs[0]?.id ?? null,
+  }));
+
+  return NextResponse.json({ repos: result });
 }

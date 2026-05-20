@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useGraphStore } from "@/lib/store/graph";
-import type { FileNodeData, ModuleData, FunctionNodeData } from "@/lib/store/graph";
+import type { FileNodeData, ModuleData, FunctionNodeData, SelectedNode } from "@/lib/store/graph";
 
 function getFilename(path: string | undefined): string {
   if (!path) return "—";
@@ -41,19 +42,26 @@ function DetailRow({
 function FunctionList({ functions }: { functions: FunctionNodeData[] }) {
   if (!functions.length) return null;
   return (
-    <div className="mt-2 space-y-1">
+    <div className="mt-2 space-y-2">
       {functions.map((fn) => (
         <div
           key={fn.id}
-          className="flex items-center justify-between px-2 py-1 rounded bg-gray-800/60 group"
+          className="px-2 py-1.5 rounded bg-gray-800/60"
         >
-          <span className="text-[10px] font-mono text-gray-300 truncate">
-            {fn.name}
-          </span>
-          {fn.startLine != null && (
-            <span className="text-[9px] text-gray-600 ml-2 flex-shrink-0 font-mono">
-              L{fn.startLine}–{fn.endLine ?? fn.startLine}
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-mono text-gray-300 truncate">
+              {fn.name}
             </span>
+            {fn.startLine != null && (
+              <span className="text-[9px] text-gray-600 ml-2 flex-shrink-0 font-mono">
+                L{fn.startLine}–{fn.endLine ?? fn.startLine}
+              </span>
+            )}
+          </div>
+          {fn.summary && (
+            <p className="text-[9px] text-gray-500 leading-snug mt-1">
+              {fn.summary}
+            </p>
           )}
         </div>
       ))}
@@ -119,10 +127,45 @@ function FileDetail({ data }: { data: FileNodeData }) {
 export default function NodeDetail() {
   const { selectedNode, setSelectedNode } = useGraphStore();
 
+  // Escape key to dismiss
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setSelectedNode(null);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [setSelectedNode]);
+
   if (!selectedNode) return null;
 
   return (
-    <div className="absolute right-0 top-0 h-full w-72 flex flex-col bg-gray-950/95 backdrop-blur-md border-l border-gray-800 z-10 shadow-2xl">
+    <>
+      {/* Mobile: bottom sheet overlay */}
+      <div className="sm:hidden absolute bottom-0 left-0 right-0 max-h-[60vh] flex flex-col bg-gray-950/95 backdrop-blur-md border-t border-gray-800 z-10 shadow-2xl rounded-t-xl">
+        {/* Drag handle */}
+        <div className="flex-none flex justify-center pt-2 pb-1">
+          <div className="w-8 h-1 rounded-full bg-gray-700" />
+        </div>
+        <PanelContent selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
+      </div>
+
+      {/* Desktop: right-side panel */}
+      <div className="hidden sm:flex absolute right-0 top-0 h-full w-72 max-w-[calc(100vw-2rem)] flex-col bg-gray-950/95 backdrop-blur-md border-l border-gray-800 z-10 shadow-2xl">
+        <PanelContent selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
+      </div>
+    </>
+  );
+}
+
+function PanelContent({
+  selectedNode,
+  setSelectedNode,
+}: {
+  selectedNode: SelectedNode;
+  setSelectedNode: (n: null) => void;
+}) {
+  return (
+    <>
       {/* Panel header */}
       <div className="flex-none flex items-center justify-between px-4 py-3 border-b border-gray-800">
         <div>
@@ -148,6 +191,6 @@ export default function NodeDetail() {
           <FileDetail data={selectedNode.data as FileNodeData} />
         )}
       </div>
-    </div>
+    </>
   );
 }

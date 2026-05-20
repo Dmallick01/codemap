@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Repo {
   id: string;
@@ -9,6 +10,7 @@ interface Repo {
   status: string;
   createdAt: string;
   url: string | null;
+  latestJobId: string | null;
 }
 
 export default function Home() {
@@ -16,13 +18,19 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [repos, setRepos] = useState<Repo[]>([]);
+  const [reposLoading, setReposLoading] = useState(true);
+  const [reposError, setReposError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     fetch("/api/repos")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load repositories");
+        return r.json();
+      })
       .then((data) => setRepos(data.repos || []))
-      .catch(() => {});
+      .catch(() => setReposError("Could not load recent repositories."))
+      .finally(() => setReposLoading(false));
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -59,6 +67,14 @@ export default function Home() {
     error: "text-red-400",
   };
 
+  function repoHref(repo: Repo): string | null {
+    if (repo.status === "done") return `/analyze/${repo.id}`;
+    if (repo.status === "processing" || repo.status === "pending") {
+      return repo.latestJobId ? `/processing/${repo.latestJobId}` : null;
+    }
+    return null;
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
       <div className="mx-auto max-w-2xl px-6 py-24">
@@ -75,7 +91,7 @@ export default function Home() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="mb-16">
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               value={url}
@@ -91,7 +107,7 @@ export default function Home() {
               className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
             >
               {loading ? (
-                <span className="flex items-center gap-2">
+                <span className="flex items-center justify-center gap-2">
                   <svg
                     className="animate-spin h-4 w-4"
                     viewBox="0 0 24 24"
@@ -124,40 +140,73 @@ export default function Home() {
         </form>
 
         {/* Recent repos */}
-        {repos.length > 0 && (
-          <div>
-            <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-              Recent Repositories
-            </h2>
+        <div>
+          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
+            Recent Repositories
+          </h2>
+
+          {reposError && (
+            <p className="text-xs text-red-400 mb-3">{reposError}</p>
+          )}
+
+          {!reposLoading && !reposError && repos.length === 0 && (
+            <p className="text-sm text-gray-600 italic">
+              No repositories analyzed yet. Paste a GitHub URL above to get started.
+            </p>
+          )}
+
+          {repos.length > 0 && (
             <div className="space-y-2">
-              {repos.map((repo) => (
-                <a
-                  key={repo.id}
-                  href={
-                    repo.status === "done"
-                      ? `/analyze/${repo.id}`
-                      : repo.status === "processing" || repo.status === "pending"
-                        ? `/processing/${repo.id}`
-                        : "#"
-                  }
-                  className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-800/30 px-4 py-3 hover:border-gray-700 hover:bg-gray-800/50 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium text-gray-200">{repo.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(repo.createdAt).toLocaleDateString()}
-                    </p>
+              {repos.map((repo) => {
+                const href = repoHref(repo);
+                const isError = repo.status === "error";
+
+                const inner = (
+                  <div className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-800/30 px-4 py-3 hover:border-gray-700 hover:bg-gray-800/50 transition-colors">
+                    <div>
+                      <p className="font-medium text-gray-200">{repo.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(repo.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-xs font-medium capitalize ${statusColor[repo.status] || "text-gray-400"}`}
+                      >
+                        {repo.status}
+                      </span>
+                      {isError && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setUrl(repo.url ?? "");
+                          }}
+                          className="text-[10px] px-2 py-0.5 rounded border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-500 transition-colors"
+                        >
+                          Retry
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <span
-                    className={`text-xs font-medium capitalize ${statusColor[repo.status] || "text-gray-400"}`}
-                  >
-                    {repo.status}
-                  </span>
-                </a>
-              ))}
+                );
+
+                if (href) {
+                  return (
+                    <Link key={repo.id} href={href}>
+                      {inner}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div key={repo.id} className="cursor-default">
+                    {inner}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </main>
   );
