@@ -36,6 +36,7 @@ model FileNode {
   repoId      String
   repo        Repo         @relation(fields: [repoId], references: [id])
   path        String
+  contentHash String? // SHA256 of file content for skip-on-reanalyze
   language    String?
   summary     String?
   moduleNodes ModuleNode[]

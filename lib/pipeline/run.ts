@@ -1,8 +1,16 @@
+import PQueue from "p-queue";
 import { prisma } from "@/lib/db";
 import { fetchAndStoreFiles } from "./fetcher";
-import { parseAndStoreAST } from "./parser";
-import { analyzeWithAI } from "./analyzer";
+import { analyzeFileSummary, analyzeFunctionsForFile } from "./analyzer";
 import { buildDependencyGraph } from "./graph-builder";
+import {
+  parseSingleFile,
+  updateParseJobProgress,
+  type ParseStats,
+} from "./parser";
+
+const PARSE_CONCURRENCY = 12;
+const AI_CONCURRENCY = 10;
 
 export async function runPipeline(
   repoId: string,
@@ -15,16 +23,86 @@ export async function runPipeline(
       data: { status: "processing" },
     });
 
-    // Step 1: Fetch
-    const files = await fetchAndStoreFiles(repoId, jobId, url);
+    const parseQueue = new PQueue({ concurrency: PARSE_CONCURRENCY });
+    const aiQueue = new PQueue({ concurrency: AI_CONCURRENCY });
 
-    // Step 2: Parse
-    await parseAndStoreAST(repoId, jobId, files);
+    const parseStats: ParseStats = { parsed: 0, skipped: 0, total: 0 };
+    let aiCompleted = 0;
+    let aiTotal = 0;
 
-    // Step 3: AI Analyze — errors are handled gracefully inside analyzeWithAI
-    await analyzeWithAI(repoId, jobId);
+    const fetchPromise = fetchAndStoreFiles(
+      repoId,
+      jobId,
+      url,
+      (fileNodeId, path, content) => {
+        parseStats.total++;
+        parseQueue.add(async () => {
+          await parseSingleFile(repoId, fileNodeId, path, content, parseStats);
 
-    // Step 4: Build graph
+          if (parseStats.parsed % 25 === 0) {
+            await updateParseJobProgress(jobId, parseStats);
+          }
+
+          const fileNode = await prisma.fileNode.findUnique({
+            where: { id: fileNodeId },
+            select: { contentHash: true },
+          });
+
+          aiTotal++;
+          aiQueue.add(async () => {
+            try {
+              await analyzeFunctionsForFile(
+                fileNodeId,
+                fileNode?.contentHash ?? null
+              );
+              await analyzeFileSummary(
+                fileNodeId,
+                fileNode?.contentHash ?? null
+              );
+            } catch (err) {
+              console.error(`AI analysis failed for ${path}:`, err);
+            }
+            aiCompleted++;
+            if (aiCompleted % 10 === 0 || aiCompleted === aiTotal) {
+              await prisma.job.update({
+                where: { id: jobId },
+                data: {
+                  step: "analyzing",
+                  progress: aiCompleted,
+                  total: aiTotal,
+                  log: `Analyzing: ${aiCompleted}/${aiTotal} files...`,
+                },
+              });
+            }
+          });
+        });
+      }
+    );
+
+    await fetchPromise;
+    await parseQueue.onIdle();
+
+    await prisma.job.update({
+      where: { id: jobId },
+      data: {
+        step: "analyzing",
+        progress: parseStats.parsed,
+        total: parseStats.total,
+        log: `Parsed ${parseStats.parsed}/${parseStats.total} files (skipped ${parseStats.skipped} unchanged). Running AI analysis...`,
+      },
+    });
+
+    await aiQueue.onIdle();
+
+    await prisma.job.update({
+      where: { id: jobId },
+      data: {
+        step: "building",
+        progress: 0,
+        log: "AI analysis complete. Building dependency graph...",
+      },
+    });
+
     await buildDependencyGraph(repoId, jobId);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

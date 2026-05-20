@@ -1,6 +1,5 @@
 import { Octokit } from "@octokit/rest";
 import { Open } from "unzipper";
-import { Readable } from "stream";
 
 const MAX_FILES = parseInt(process.env.MAX_FILES || "500", 10);
 
@@ -57,6 +56,47 @@ function isIgnoredPath(filePath: string): boolean {
   return false;
 }
 
+function getExtension(filePath: string): string {
+  return filePath.includes(".") ? "." + filePath.split(".").pop()! : "";
+}
+
+function isPriorityPath(filePath: string): boolean {
+  return PRIORITY_EXTENSIONS.has(getExtension(filePath).toLowerCase());
+}
+
+function relativePathFromEntry(entryPath: string): string | null {
+  const parts = entryPath.split("/");
+  const relativePath = parts.slice(1).join("/");
+  if (!relativePath || isIgnoredPath(relativePath)) return null;
+  return relativePath;
+}
+
+function selectPathsForProcessing(paths: string[]): string[] {
+  if (paths.length <= MAX_FILES) return paths;
+
+  const priority: string[] = [];
+  const other: string[] = [];
+
+  for (const filePath of paths) {
+    if (isPriorityPath(filePath)) {
+      priority.push(filePath);
+    } else {
+      other.push(filePath);
+    }
+  }
+
+  const result: string[] = [];
+  for (const filePath of priority) {
+    if (result.length >= MAX_FILES) break;
+    result.push(filePath);
+  }
+  for (const filePath of other) {
+    if (result.length >= MAX_FILES) break;
+    result.push(filePath);
+  }
+  return result;
+}
+
 export function parseGitHubUrl(url: string): { owner: string; repo: string } {
   const cleaned = url.replace(/\.git$/, "").replace(/\/$/, "");
   const match = cleaned.match(
@@ -66,9 +106,7 @@ export function parseGitHubUrl(url: string): { owner: string; repo: string } {
   return { owner: match[1], repo: match[2] };
 }
 
-export async function fetchRepoFiles(
-  url: string
-): Promise<Map<string, string>> {
+async function downloadZipDirectory(url: string) {
   const { owner, repo } = parseGitHubUrl(url);
 
   const octokit = new Octokit({
@@ -82,55 +120,65 @@ export async function fetchRepoFiles(
   });
 
   const buffer = Buffer.from(data as ArrayBuffer);
-  const directory = await Open.buffer(buffer);
+  return Open.buffer(buffer);
+}
 
-  const files = new Map<string, string>();
+/**
+ * Stream repository files entry-by-entry, invoking onFile for each text file.
+ * Respects MAX_FILES with priority extension ordering when over limit.
+ */
+export async function fetchRepoFilesStreaming(
+  url: string,
+  onFile: (path: string, content: string) => Promise<void>,
+  onBegin?: (totalExtracted: number) => void | Promise<void>
+): Promise<{ totalExtracted: number; processed: number }> {
+  const directory = await downloadZipDirectory(url);
+
+  type ZipFile = (typeof directory.files)[number];
+  const fileEntries: { path: string; entry: ZipFile }[] = [];
 
   for (const entry of directory.files) {
     if (entry.type === "Directory") continue;
+    const relativePath = relativePathFromEntry(entry.path);
+    if (!relativePath) continue;
+    fileEntries.push({ path: relativePath, entry });
+  }
 
-    // Strip the top-level dir (GitHub adds owner-repo-sha/)
-    const parts = entry.path.split("/");
-    const relativePath = parts.slice(1).join("/");
+  const totalExtracted = fileEntries.length;
+  if (onBegin) await onBegin(totalExtracted);
+  const pathsToProcess = selectPathsForProcessing(
+    fileEntries.map((f) => f.path)
+  );
+  const pathSet = new Set(pathsToProcess);
 
-    if (!relativePath || isIgnoredPath(relativePath)) continue;
+  let processed = 0;
+
+  for (const { path, entry } of fileEntries) {
+    if (!pathSet.has(path)) continue;
 
     try {
       const content = await entry.buffer();
       const text = content.toString("utf-8");
-      // Skip files that look binary (contain null bytes)
       if (text.includes("\0")) continue;
-      files.set(relativePath, text);
+
+      await onFile(path, text);
+      processed++;
     } catch {
       // Skip files that can't be read as text
     }
   }
 
-  if (files.size > MAX_FILES) {
-    const priorityFiles = new Map<string, string>();
-    const otherFiles = new Map<string, string>();
+  return { totalExtracted, processed };
+}
 
-    for (const [filePath, content] of files) {
-      const ext = filePath.includes(".") ? "." + filePath.split(".").pop()! : "";
-      if (PRIORITY_EXTENSIONS.has(ext.toLowerCase())) {
-        priorityFiles.set(filePath, content);
-      } else {
-        otherFiles.set(filePath, content);
-      }
-    }
-
-    const result = new Map<string, string>();
-    for (const [filePath, content] of priorityFiles) {
-      if (result.size >= MAX_FILES) break;
-      result.set(filePath, content);
-    }
-    for (const [filePath, content] of otherFiles) {
-      if (result.size >= MAX_FILES) break;
-      result.set(filePath, content);
-    }
-    return result;
-  }
-
+/** Collect all files into a Map (backward-compatible wrapper). */
+export async function fetchRepoFiles(
+  url: string
+): Promise<Map<string, string>> {
+  const files = new Map<string, string>();
+  await fetchRepoFilesStreaming(url, async (path, content) => {
+    files.set(path, content);
+  });
   return files;
 }
 

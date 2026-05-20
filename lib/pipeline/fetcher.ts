@@ -1,70 +1,91 @@
 import { prisma } from "@/lib/db";
-import { fetchRepoFiles } from "@/lib/services/github";
+import { fetchRepoFilesStreaming } from "@/lib/services/github";
 import { getLanguageForFile } from "@/lib/services/tree-sitter";
+
+export type OnFileStoredCallback = (
+  fileNodeId: string,
+  path: string,
+  content: string
+) => void | Promise<void>;
+
+export interface FetchStats {
+  totalExtracted: number;
+  fetched: number;
+}
 
 export async function fetchAndStoreFiles(
   repoId: string,
   jobId: string,
-  url: string
-): Promise<Map<string, string>> {
+  url: string,
+  onFileStored?: OnFileStoredCallback
+): Promise<FetchStats> {
   await prisma.job.update({
     where: { id: jobId },
     data: { step: "fetching", log: "Downloading repository..." },
   });
 
-  const files = await fetchRepoFiles(url);
+  const stats: FetchStats = { totalExtracted: 0, fetched: 0 };
 
-  const isLargeRepo = files.size >= 500;
-  const fetchLog = isLargeRepo
-    ? `Large repo detected. Processing top 500 source files. Creating file nodes...`
-    : `Downloaded ${files.size} files. Creating file nodes...`;
+  const result = await fetchRepoFilesStreaming(
+    url,
+    async (filePath, content) => {
+    try {
+      const language = getLanguageForFile(filePath);
+      const existing = await prisma.fileNode.findFirst({
+        where: { repoId, path: filePath },
+        select: { id: true },
+      });
 
-  await prisma.job.update({
-    where: { id: jobId },
-    data: {
-      log: fetchLog,
-      total: files.size,
-    },
-  });
+      const fileNode = existing
+        ? await prisma.fileNode.update({
+            where: { id: existing.id },
+            data: { language },
+          })
+        : await prisma.fileNode.create({
+            data: { repoId, path: filePath, language },
+          });
 
-  let progress = 0;
-  const batch = [];
+      stats.fetched++;
 
-  for (const [filePath] of files) {
-    batch.push({
-      repoId,
-      path: filePath,
-      language: getLanguageForFile(filePath),
-    });
-    progress++;
+      if (stats.fetched % 25 === 0) {
+        await prisma.job.update({
+          where: { id: jobId },
+          data: {
+            progress: stats.fetched,
+            total: stats.totalExtracted || stats.fetched,
+            log: `Fetching: ${stats.fetched}/${stats.totalExtracted} files...`,
+          },
+        });
+      }
 
-    if (batch.length >= 50) {
-      await prisma.fileNode.createMany({ data: batch });
-      batch.length = 0;
+      if (onFileStored) {
+        await onFileStored(fileNode.id, filePath, content);
+      }
+    } catch (err) {
+      console.error(`Failed to store file ${filePath}:`, err);
+    }
+  },
+    async (totalExtracted) => {
+      stats.totalExtracted = totalExtracted;
       await prisma.job.update({
         where: { id: jobId },
-        data: { progress },
+        data: { total: totalExtracted, log: `Found ${totalExtracted} files in archive. Fetching...` },
       });
     }
-  }
+  );
 
-  if (batch.length > 0) {
-    await prisma.fileNode.createMany({ data: batch });
-    await prisma.job.update({
-      where: { id: jobId },
-      data: { progress },
-    });
-  }
+  stats.totalExtracted = result.totalExtracted;
+  stats.fetched = result.processed;
 
   await prisma.job.update({
     where: { id: jobId },
     data: {
       step: "parsing",
-      log: `Fetched ${files.size} files. Starting parse...`,
       progress: 0,
-      total: files.size,
+      total: stats.fetched,
+      log: `Fetched ${stats.fetched}/${stats.totalExtracted} files. Parsing...`,
     },
   });
 
-  return files;
+  return stats;
 }

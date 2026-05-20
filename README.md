@@ -53,3 +53,29 @@ npm run dev
 | `AI_MODEL` | No | Model identifier for the chosen provider |
 | `ANTHROPIC_API_KEY` | No | Required if `AI_PROVIDER=anthropic` |
 | `OPENAI_API_KEY` | No | Required if `AI_PROVIDER=openai` |
+| `MAX_FILES` | No | Max source files to ingest per repo (default: `500`) |
+
+## GPU acceleration (local)
+
+CodeMap uses Ollama for local AI when `AI_PROVIDER=ollama`. Ollama automatically uses:
+- **Apple Silicon**: Metal GPU
+- **NVIDIA**: CUDA
+- **AMD**: ROCm (Linux)
+
+```bash
+ollama pull llama3.2
+ollama pull nomic-embed-text  # for future vector search
+# Verify GPU usage:
+ollama ps
+```
+
+Set in `.env.local`:
+```
+AI_PROVIDER=ollama
+AI_MODEL=llama3.2
+MAX_FILES=1000000
+```
+
+## Incremental re-analysis
+
+Files are hashed (SHA256). Re-analyzing a repo skips unchanged files and cached AI summaries, making repeat runs much faster.
