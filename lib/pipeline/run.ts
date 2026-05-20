@@ -21,20 +21,8 @@ export async function runPipeline(
     // Step 2: Parse
     await parseAndStoreAST(repoId, jobId, files);
 
-    // Step 3: AI Analyze
-    const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
-    if (hasApiKey) {
-      await analyzeWithAI(repoId, jobId);
-    } else {
-      console.warn("ANTHROPIC_API_KEY not set — skipping AI summarization");
-      await prisma.job.update({
-        where: { id: jobId },
-        data: {
-          step: "building",
-          log: "Skipped AI summarization (no API key). Building graph...",
-        },
-      });
-    }
+    // Step 3: AI Analyze — errors are handled gracefully inside analyzeWithAI
+    await analyzeWithAI(repoId, jobId);
 
     // Step 4: Build graph
     await buildDependencyGraph(repoId, jobId);
