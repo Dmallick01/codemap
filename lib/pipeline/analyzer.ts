@@ -37,11 +37,9 @@ export async function analyzeWithAI(repoId: string, jobId: string) {
 
   await withConcurrency(repoFunctions, 5, async (fn) => {
     try {
-      const summary = await summarizeFunction(
-        fn.code,
-        fn.language || "unknown",
-        fn.name
-      );
+      const filePath =
+        fn.moduleNode?.fileNode?.path ?? fn.fileNodeId ?? "unknown";
+      const summary = await summarizeFunction(fn.name, fn.code, filePath);
       await prisma.functionNode.update({
         where: { id: fn.id },
         data: { summary },
