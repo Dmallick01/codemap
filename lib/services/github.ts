@@ -2,7 +2,7 @@ import { Octokit } from "@octokit/rest";
 import { Open } from "unzipper";
 import { Readable } from "stream";
 
-const MAX_FILES = 500;
+const MAX_FILES = parseInt(process.env.MAX_FILES || "500", 10);
 
 const PRIORITY_EXTENSIONS = new Set([
   ".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs", ".java",
