@@ -24,28 +24,19 @@ const languageCache = new Map<string, any>();
 async function ensureInitialized() {
   if (!initialized) {
     Parser = require("web-tree-sitter");
-    // Handle both default export and module.exports
-    if (Parser.default) Parser = Parser.default;
     const wasmPath = path.join(WASM_DIR, "web-tree-sitter.wasm");
-    await Parser.init({
-      locateFile: () => wasmPath,
-    });
+    await Parser.init({ locateFile: () => wasmPath });
     initialized = true;
   }
 }
 
 function getWasmPath(language: string): string {
-  const wasmFile = `tree-sitter-${language}.wasm`;
-  return path.join(WASM_DIR, wasmFile);
+  return path.join(WASM_DIR, `tree-sitter-${language}.wasm`);
 }
 
 export function getLanguageForFile(filePath: string): string | null {
   const ext = path.extname(filePath).toLowerCase();
   return LANGUAGE_MAP[ext] || null;
-}
-
-export function getSupportedExtensions(): string[] {
-  return Object.keys(LANGUAGE_MAP);
 }
 
 async function loadLanguage(languageName: string): Promise<any | null> {
@@ -91,7 +82,6 @@ const FUNCTION_TYPES = new Set([
   "function_definition",
   "method_declaration",
   "function_item",
-  "func_declaration",
   "arrow_function",
   "function",
 ]);
@@ -165,7 +155,7 @@ export async function parseFile(
   const functions: ParsedFunction[] = [];
   const imports: string[] = [];
 
-  function visit(node: any, parentModule?: ParsedModule) {
+  function visit(node: any) {
     if (IMPORT_TYPES.has(node.type)) {
       imports.push(extractImportPath(node));
       return;
@@ -203,7 +193,7 @@ export async function parseFile(
       return;
     }
 
-    if (FUNCTION_TYPES.has(node.type) && !parentModule) {
+    if (FUNCTION_TYPES.has(node.type)) {
       if (node.type === "arrow_function") {
         functions.push({
           name: extractName(node),
@@ -230,7 +220,7 @@ export async function parseFile(
       node.type === "export_statement"
     ) {
       for (const child of node.children) {
-        visit(child, parentModule);
+        visit(child);
       }
       return;
     }
@@ -238,13 +228,13 @@ export async function parseFile(
     if (node.type === "variable_declarator") {
       const init = node.childForFieldName("value") ?? node.children.find((c: any) => c.type === "arrow_function");
       if (init && FUNCTION_TYPES.has(init.type)) {
-        visit(init, parentModule);
+        visit(init);
         return;
       }
     }
 
     for (const child of node.children) {
-      visit(child, parentModule);
+      visit(child);
     }
   }
 
