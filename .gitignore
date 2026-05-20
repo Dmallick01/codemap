@@ -43,3 +43,5 @@ next-env.d.ts
 
 # env files
 .env
+app/generated/
+public/tree-sitter/*.wasm
