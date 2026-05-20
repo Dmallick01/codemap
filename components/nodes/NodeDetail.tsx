@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useGraphStore } from "@/lib/store/graph";
 import type { FileNodeData, ModuleData, FunctionNodeData, SelectedNode } from "@/lib/store/graph";
 
@@ -39,31 +39,51 @@ function DetailRow({
   );
 }
 
+function FunctionEntry({ fn }: { fn: FunctionNodeData }) {
+  const [showCode, setShowCode] = useState(false);
+
+  return (
+    <div className="px-2 py-1.5 rounded bg-gray-800/60">
+      <div className="flex items-center justify-between gap-1">
+        <span className="text-[10px] font-mono text-gray-300 truncate">
+          {fn.name}
+        </span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {fn.startLine != null && (
+            <span className="text-[9px] text-gray-600 font-mono">
+              L{fn.startLine}–{fn.endLine ?? fn.startLine}
+            </span>
+          )}
+          {fn.code && (
+            <button
+              onClick={() => setShowCode((v) => !v)}
+              className="text-[9px] px-1.5 py-0.5 rounded border border-gray-700 text-gray-500 hover:text-gray-300 hover:border-gray-500 transition-colors"
+            >
+              {showCode ? "Hide" : "Show code"}
+            </button>
+          )}
+        </div>
+      </div>
+      {fn.summary && (
+        <p className="text-[9px] text-gray-500 leading-snug mt-1">
+          {fn.summary}
+        </p>
+      )}
+      {showCode && fn.code && (
+        <pre className="mt-2 text-[9px] leading-relaxed text-gray-300 font-mono bg-gray-900 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all border border-gray-700/50">
+          <code>{fn.code}</code>
+        </pre>
+      )}
+    </div>
+  );
+}
+
 function FunctionList({ functions }: { functions: FunctionNodeData[] }) {
   if (!functions.length) return null;
   return (
     <div className="mt-2 space-y-2">
       {functions.map((fn) => (
-        <div
-          key={fn.id}
-          className="px-2 py-1.5 rounded bg-gray-800/60"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono text-gray-300 truncate">
-              {fn.name}
-            </span>
-            {fn.startLine != null && (
-              <span className="text-[9px] text-gray-600 ml-2 flex-shrink-0 font-mono">
-                L{fn.startLine}–{fn.endLine ?? fn.startLine}
-              </span>
-            )}
-          </div>
-          {fn.summary && (
-            <p className="text-[9px] text-gray-500 leading-snug mt-1">
-              {fn.summary}
-            </p>
-          )}
-        </div>
+        <FunctionEntry key={fn.id} fn={fn} />
       ))}
     </div>
   );
