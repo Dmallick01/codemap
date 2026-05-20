@@ -145,6 +145,10 @@ export async function parseFile(
   const lang = await loadLanguage(language);
   if (!lang) return null;
 
+  if (content.length > 100_000) {
+    return null;
+  }
+
   const parser = new Parser();
   parser.setLanguage(lang);
 

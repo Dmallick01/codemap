@@ -21,6 +21,8 @@ export async function parseAndStoreAST(
     data: { step: "parsing", progress: 0, total },
   });
 
+  const MAX_FILE_SIZE = 100_000;
+
   for (const [filePath, content] of files) {
     const fileNodeId = fileNodeMap.get(filePath);
     if (!fileNodeId) continue;
@@ -31,27 +33,47 @@ export async function parseAndStoreAST(
       continue;
     }
 
-    const result = await parseFile(content, filePath);
-    if (!result) {
+    if (content.length > MAX_FILE_SIZE) {
       progress++;
       continue;
     }
 
-    for (const mod of result.modules) {
-      const moduleNode = await prisma.moduleNode.create({
-        data: {
-          fileNodeId,
-          name: mod.name,
-          type: mod.type,
-          startLine: mod.startLine,
-          endLine: mod.endLine,
-        },
-      });
+    try {
+      const result = await parseFile(content, filePath);
+      if (!result) {
+        progress++;
+        continue;
+      }
 
-      for (const fn of mod.functions) {
+      for (const mod of result.modules) {
+        const moduleNode = await prisma.moduleNode.create({
+          data: {
+            fileNodeId,
+            name: mod.name,
+            type: mod.type,
+            startLine: mod.startLine,
+            endLine: mod.endLine,
+          },
+        });
+
+        for (const fn of mod.functions) {
+          await prisma.functionNode.create({
+            data: {
+              moduleNodeId: moduleNode.id,
+              fileNodeId,
+              name: fn.name,
+              code: fn.code,
+              startLine: fn.startLine,
+              endLine: fn.endLine,
+              language,
+            },
+          });
+        }
+      }
+
+      for (const fn of result.functions) {
         await prisma.functionNode.create({
           data: {
-            moduleNodeId: moduleNode.id,
             fileNodeId,
             name: fn.name,
             code: fn.code,
@@ -61,31 +83,20 @@ export async function parseAndStoreAST(
           },
         });
       }
-    }
 
-    for (const fn of result.functions) {
-      await prisma.functionNode.create({
-        data: {
-          fileNodeId,
-          name: fn.name,
-          code: fn.code,
-          startLine: fn.startLine,
-          endLine: fn.endLine,
-          language,
-        },
-      });
-    }
-
-    // Store import paths in fileNode as JSON string for graph-builder
-    if (result.imports.length > 0) {
-      await prisma.fileNode.update({
-        where: { id: fileNodeId },
-        data: { summary: JSON.stringify({ imports: result.imports }) },
-      });
+      // Store import paths in fileNode as JSON string for graph-builder
+      if (result.imports.length > 0) {
+        await prisma.fileNode.update({
+          where: { id: fileNodeId },
+          data: { summary: JSON.stringify({ imports: result.imports }) },
+        });
+      }
+    } catch (err) {
+      console.error(`Failed to parse ${filePath}:`, err);
     }
 
     progress++;
-    if (progress % 10 === 0) {
+    if (progress % 50 === 0) {
       await prisma.job.update({
         where: { id: jobId },
         data: { progress, log: `Parsed ${progress}/${total} files` },

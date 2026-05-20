@@ -14,10 +14,15 @@ export async function fetchAndStoreFiles(
 
   const files = await fetchRepoFiles(url);
 
+  const isLargeRepo = files.size >= 500;
+  const fetchLog = isLargeRepo
+    ? `Large repo detected. Processing top 500 source files. Creating file nodes...`
+    : `Downloaded ${files.size} files. Creating file nodes...`;
+
   await prisma.job.update({
     where: { id: jobId },
     data: {
-      log: `Downloaded ${files.size} files. Creating file nodes...`,
+      log: fetchLog,
       total: files.size,
     },
   });

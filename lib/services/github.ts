@@ -2,6 +2,12 @@ import { Octokit } from "@octokit/rest";
 import { Open } from "unzipper";
 import { Readable } from "stream";
 
+const MAX_FILES = 500;
+
+const PRIORITY_EXTENSIONS = new Set([
+  ".ts", ".tsx", ".js", ".jsx", ".py", ".go", ".rs", ".java",
+]);
+
 const IGNORED_DIRS = new Set([
   "node_modules",
   ".git",
@@ -98,6 +104,31 @@ export async function fetchRepoFiles(
     } catch {
       // Skip files that can't be read as text
     }
+  }
+
+  if (files.size > MAX_FILES) {
+    const priorityFiles = new Map<string, string>();
+    const otherFiles = new Map<string, string>();
+
+    for (const [filePath, content] of files) {
+      const ext = filePath.includes(".") ? "." + filePath.split(".").pop()! : "";
+      if (PRIORITY_EXTENSIONS.has(ext.toLowerCase())) {
+        priorityFiles.set(filePath, content);
+      } else {
+        otherFiles.set(filePath, content);
+      }
+    }
+
+    const result = new Map<string, string>();
+    for (const [filePath, content] of priorityFiles) {
+      if (result.size >= MAX_FILES) break;
+      result.set(filePath, content);
+    }
+    for (const [filePath, content] of otherFiles) {
+      if (result.size >= MAX_FILES) break;
+      result.set(filePath, content);
+    }
+    return result;
   }
 
   return files;
