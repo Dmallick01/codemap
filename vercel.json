@@ -1,0 +1,14 @@
+{
+  "buildCommand": "prisma generate && node scripts/copy-wasm.js && next build",
+  "functions": {
+    "app/api/ingest/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/job/[jobId]/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/graph/[repoId]/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}

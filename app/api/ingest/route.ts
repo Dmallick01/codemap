@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { parseGitHubUrl } from "@/lib/services/github";
@@ -44,9 +45,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Fire-and-forget: run the pipeline asynchronously
-    runPipeline(repo.id, job.id, url).catch((err) => {
-      console.error("Pipeline background error:", err);
+    // Schedule pipeline to run after the response is sent (Vercel-safe)
+    after(async () => {
+      await runPipeline(repo.id, job.id, url);
     });
 
     return NextResponse.json(
