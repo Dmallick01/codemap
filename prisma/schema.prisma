@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Repo {
+  id          String   @id @default(cuid())
+  name        String
+  url         String?
+  sourceType  String
+  createdAt   DateTime @default(now())
+  status      String   @default("pending")
+  errorMsg    String?
+  jobs        Job[]
+  fileNodes   FileNode[]
+}
+
+model Job {
+  id        String   @id @default(cuid())
+  repoId    String
+  repo      Repo     @relation(fields: [repoId], references: [id])
+  step      String   @default("fetching")
+  progress  Int      @default(0)
+  total     Int      @default(0)
+  log       String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FileNode {
+  id          String       @id @default(cuid())
+  repoId      String
+  repo        Repo         @relation(fields: [repoId], references: [id])
+  path        String
+  language    String?
+  summary     String?
+  moduleNodes ModuleNode[]
+  edgesFrom   Edge[]       @relation("EdgeFrom")
+  edgesTo     Edge[]       @relation("EdgeTo")
+}
+
+model ModuleNode {
+  id            String         @id @default(cuid())
+  fileNodeId    String
+  fileNode      FileNode       @relation(fields: [fileNodeId], references: [id])
+  name          String
+  type          String
+  summary       String?
+  startLine     Int
+  endLine       Int
+  functionNodes FunctionNode[]
+}
+
+model FunctionNode {
+  id           String      @id @default(cuid())
+  moduleNodeId String?
+  moduleNode   ModuleNode? @relation(fields: [moduleNodeId], references: [id])
+  fileNodeId   String?
+  name         String
+  code         String
+  summary      String?
+  startLine    Int
+  endLine      Int
+  language     String?
+  chunkNodes   ChunkNode[]
+}
+
+model ChunkNode {
+  id             String       @id @default(cuid())
+  functionNodeId String
+  functionNode   FunctionNode @relation(fields: [functionNodeId], references: [id])
+  code           String
+  summary        String?
+  startLine      Int
+  endLine        Int
+  chunkIndex     Int
+  pineconeId     String?
+}
+
+model Edge {
+  id          String   @id @default(cuid())
+  fromId      String
+  toId        String
+  fromNode    FileNode @relation("EdgeFrom", fields: [fromId], references: [id])
+  toNode      FileNode @relation("EdgeTo", fields: [toId], references: [id])
+  type        String
+  label       String?
+}
