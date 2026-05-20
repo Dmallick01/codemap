@@ -28,6 +28,7 @@ export async function GET(
               startLine: true,
               endLine: true,
               language: true,
+              code: true,
             },
           },
         },
@@ -84,6 +85,7 @@ export async function GET(
   return NextResponse.json({
     repoId,
     repoName: repo.name,
+    repoUrl: repo.url,
     status: repo.status,
     nodes,
     edges: graphEdges,

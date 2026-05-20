@@ -105,14 +105,6 @@ export default function ProcessingPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
       <div className="mx-auto max-w-2xl px-6 py-24">
-        {/* Header */}
-        <Link
-          href="/"
-          className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
-        >
-          &larr; Back to CodeMap
-        </Link>
-
         {error && !job && (
           <div className="mt-8 rounded-lg border border-red-800 bg-red-900/20 p-6 text-center">
             <p className="text-red-400">{error}</p>

@@ -1,0 +1,6 @@
+node_modules
+.next
+app/generated
+public/tree-sitter
+.env
+.env.local

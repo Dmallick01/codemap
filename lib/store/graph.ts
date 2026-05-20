@@ -7,6 +7,7 @@ export type FunctionNodeData = {
   endLine?: number | null;
   summary?: string | null;
   language?: string | null;
+  code?: string | null;
 };
 
 export type ModuleData = {
