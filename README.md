@@ -1,81 +1,107 @@
 # CodeMap
 
-Visualize and explore GitHub repositories as interactive dependency graphs, powered by AI-generated summaries.
+**One line:** AI-powered code deconstructor — ingest a public GitHub repo, explore files with keyboard navigation (hf-viewer style), and inspect an interactive dependency graph.
 
-## Features
+Public repo: [github.com/Dmallick01/codemap](https://github.com/Dmallick01/codemap)
 
-- Ingest any public GitHub repository via URL
-- Builds a file/module dependency graph
-- AI-powered summaries for each node (Anthropic, OpenAI, or Ollama)
-- Interactive graph explorer with node detail panel
+## What it does
 
-## Local Development
+```mermaid
+flowchart LR
+  URL[GitHub URL] --> ING[Ingest pipeline]
+  ING --> PARSE[Tree-sitter parse]
+  PARSE --> AI[Optional AI summaries]
+  AI --> GRAPH[React Flow graph]
+  GRAPH --> EXP[Keyboard explorer]
+  EXP --> LS[(Browser session)]
+```
+
+| Stage | Description |
+|-------|-------------|
+| **Ingest** | Fetch repo archive, hash files, skip unchanged on re-run |
+| **Parse** | Extract modules, functions, imports (WASM tree-sitter) |
+| **Analyze** | Optional summaries via Anthropic, OpenAI, or Ollama |
+| **Explore** | `N` / `P` walk files; progress saved in `localStorage` |
+
+Inspired by public dataset viewers like [hf-viewer](https://github.com/SJCaldwell/hf-viewer) — sequential sample browsing with auto-save and resume, applied to **code files** instead of Hugging Face rows.
+
+## Quick start
 
 ```bash
-# Install dependencies
+git clone https://github.com/Dmallick01/codemap.git
+cd codemap
 npm install
-
-# Set up environment variables
 cp .env.example .env.local
-# Edit .env.local with your DATABASE_URL and API keys
+# Set DATABASE_URL (SQLite or Neon Postgres)
 
-# Generate Prisma client and run migrations
-npx prisma generate
 npx prisma migrate dev
-
-# Start the dev server
 npm run dev
 ```
 
-## Deployment (Vercel + Neon)
+Open http://localhost:3000 → paste `https://github.com/vercel/next.js` → **Analyze**.
 
-1. Create a Neon project at https://neon.tech (free tier)
-2. Copy the connection string (includes `?sslmode=require`)
-3. Import repo at https://vercel.com/new
-4. Add environment variables:
-   - `DATABASE_URL` — Neon connection string
-   - `GITHUB_TOKEN` — GitHub personal access token (optional but recommended to avoid rate limits)
-   - `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` — for AI summaries (optional)
-   - `AI_PROVIDER` — `anthropic`, `openai`, or `ollama`
-   - `AI_MODEL` — model name (e.g. `claude-3-5-haiku-20241022`, `gpt-4o-mini`)
-5. Deploy — Vercel auto-runs `prisma generate && node scripts/copy-wasm.js && next build`
-6. After first deploy, run migrations: `npx prisma migrate deploy` with the Neon `DATABASE_URL`
+## Explorer shortcuts
 
-> **Note:** The ingest API uses Next.js `after()` to run the pipeline after the response is sent, keeping background work alive on Vercel serverless.
+| Key | Action |
+|-----|--------|
+| `N` / `→` | Next file |
+| `P` / `←` | Previous file |
+| `R` | Random file |
+| `?` | Toggle shortcut help |
+| `Esc` | Close detail panel |
 
-## Environment Variables
+Session state is stored per repo in the browser (`codemap-explorer-<repoId>`).
+
+## Environment variables
 
 | Variable | Required | Description |
-|---|---|---|
-| `DATABASE_URL` | Yes | PostgreSQL connection string (Neon or local) |
-| `GITHUB_TOKEN` | No | GitHub PAT for higher API rate limits |
-| `AI_PROVIDER` | No | `anthropic`, `openai`, or `ollama` (default: none) |
-| `AI_MODEL` | No | Model identifier for the chosen provider |
-| `ANTHROPIC_API_KEY` | No | Required if `AI_PROVIDER=anthropic` |
-| `OPENAI_API_KEY` | No | Required if `AI_PROVIDER=openai` |
-| `MAX_FILES` | No | Max source files to ingest per repo (default: `500`) |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL (Neon) or compatible |
+| `GITHUB_TOKEN` | No | Higher GitHub API rate limits |
+| `AI_PROVIDER` | No | `anthropic`, `openai`, or `ollama` |
+| `AI_MODEL` | No | Model id for chosen provider |
+| `ANTHROPIC_API_KEY` | No | If using Anthropic |
+| `OPENAI_API_KEY` | No | If using OpenAI |
+| `MAX_FILES` | No | Cap files per ingest (default `500`) |
 
-## GPU acceleration (local)
+## Deploy (Vercel + Neon)
 
-CodeMap uses Ollama for local AI when `AI_PROVIDER=ollama`. Ollama automatically uses:
-- **Apple Silicon**: Metal GPU
-- **NVIDIA**: CUDA
-- **AMD**: ROCm (Linux)
+1. Create a [Neon](https://neon.tech) database → copy `DATABASE_URL`
+2. Import this repo on [Vercel](https://vercel.com/new)
+3. Add env vars from the table above
+4. Deploy — build runs `prisma generate`, WASM copy, and `next build`
+5. Run `npx prisma migrate deploy` against production DB once
+
+## Local GPU (Ollama)
 
 ```bash
 ollama pull llama3.2
-ollama pull nomic-embed-text  # for future vector search
-# Verify GPU usage:
-ollama ps
 ```
 
-Set in `.env.local`:
-```
+```env
 AI_PROVIDER=ollama
 AI_MODEL=llama3.2
-MAX_FILES=1000000
 ```
 
-## Incremental re-analysis
+Ollama uses Metal on Apple Silicon automatically.
 
-Files are hashed (SHA256). Re-analyzing a repo skips unchanged files and cached AI summaries, making repeat runs much faster.
+## Project structure
+
+```
+codemap/
+├── app/                 # Next.js App Router
+├── components/          # Graph nodes, explorer toolbar
+├── hooks/               # useGraphExplorer
+├── lib/pipeline/        # fetch → parse → analyze → graph
+├── lib/explorer/        # localStorage session
+├── prisma/              # schema + migrations
+└── docs/ARCHITECTURE.md
+```
+
+## Tech stack
+
+Next.js 16 · React Flow · Tree-sitter WASM · Prisma · LiteLLM · Octokit
+
+## License
+
+MIT

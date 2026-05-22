@@ -13,6 +13,12 @@ interface Repo {
   latestJobId: string | null;
 }
 
+const DEMO_REPOS = [
+  { label: "Next.js", url: "https://github.com/vercel/next.js" },
+  { label: "React", url: "https://github.com/facebook/react" },
+  { label: "FastAPI", url: "https://github.com/tiangolo/fastapi" },
+];
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,31 +39,31 @@ export default function Home() {
       .finally(() => setReposLoading(false));
   }, []);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function startIngest(targetUrl: string) {
     setError("");
     setLoading(true);
-
     try {
       const res = await fetch("/api/ingest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: targetUrl }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || "Something went wrong");
         setLoading(false);
         return;
       }
-
       router.push(`/processing/${data.jobId}`);
     } catch {
       setError("Failed to connect to server");
       setLoading(false);
     }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await startIngest(url);
   }
 
   const statusColor: Record<string, string> = {
@@ -76,21 +82,28 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
-      <div className="mx-auto max-w-2xl px-6 py-24">
-        {/* Hero */}
-        <div className="text-center mb-12">
+    <main className="min-h-[calc(100vh-3rem)] bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
+      <div className="mx-auto max-w-2xl px-6 py-16">
+        <div className="text-center mb-10">
           <h1 className="text-5xl font-bold tracking-tight mb-4">
             Code<span className="text-blue-400">Map</span>
           </h1>
-          <p className="text-lg text-gray-400 max-w-md mx-auto">
-            AI-powered code deconstructor. Paste a GitHub repo URL and get an
-            interactive map of its architecture.
+          <p className="text-lg text-gray-400 max-w-lg mx-auto">
+            Explore any public GitHub repository like a dataset viewer — walk
+            file-by-file with keyboard shortcuts, auto-saved progress, and an
+            AI-powered dependency graph.
           </p>
+          <a
+            href="https://github.com/Dmallick01/codemap"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-4 text-sm text-gray-500 hover:text-blue-400 transition-colors"
+          >
+            View source on GitHub →
+          </a>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="mb-16">
+        <form onSubmit={handleSubmit} className="mb-8">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
@@ -106,61 +119,67 @@ export default function Home() {
               disabled={loading || !url.trim()}
               className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="animate-spin h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  Analyzing...
-                </span>
-              ) : (
-                "Analyze"
-              )}
+              {loading ? "Starting…" : "Analyze"}
             </button>
           </div>
-          {error && (
-            <p className="mt-3 text-sm text-red-400">{error}</p>
-          )}
+          {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
         </form>
 
-        {/* Recent repos */}
+        <div className="mb-10">
+          <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+            Try a public repo
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {DEMO_REPOS.map((d) => (
+              <button
+                key={d.url}
+                type="button"
+                disabled={loading}
+                onClick={() => {
+                  setUrl(d.url);
+                  startIngest(d.url);
+                }}
+                className="text-xs px-3 py-1.5 rounded-full border border-gray-700 text-gray-300 hover:border-blue-500/50 hover:text-blue-300 transition-colors disabled:opacity-50"
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5 mb-10 text-sm text-gray-400">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
+            Explorer workflow
+          </h2>
+          <ol className="list-decimal list-inside space-y-1.5">
+            <li>Paste a GitHub URL and run the ingest pipeline</li>
+            <li>Open the graph — files are sorted for sequential browsing</li>
+            <li>
+              Press <kbd className="text-gray-300 px-1">N</kbd> /{" "}
+              <kbd className="text-gray-300 px-1">P</kbd> to move between files
+              (like a sample viewer)
+            </li>
+            <li>Progress auto-saves in your browser — resume anytime</li>
+          </ol>
+        </div>
+
         <div>
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-            Recent Repositories
+            Recent repositories
           </h2>
-
           {reposError && (
             <p className="text-xs text-red-400 mb-3">{reposError}</p>
           )}
-
           {!reposLoading && !reposError && repos.length === 0 && (
             <p className="text-sm text-gray-600 italic">
-              No repositories analyzed yet. Paste a GitHub URL above to get started.
+              No repositories yet. Paste a URL or pick a demo repo above.
             </p>
           )}
-
           {repos.length > 0 && (
             <div className="space-y-2">
               {repos.map((repo) => {
                 const href = repoHref(repo);
                 const isError = repo.status === "error";
-
                 const inner = (
                   <div className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-800/30 px-4 py-3 hover:border-gray-700 hover:bg-gray-800/50 transition-colors">
                     <div>
@@ -177,11 +196,12 @@ export default function Home() {
                       </span>
                       {isError && (
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.preventDefault();
-                            setUrl(repo.url ?? "");
+                            if (repo.url) startIngest(repo.url);
                           }}
-                          className="text-[10px] px-2 py-0.5 rounded border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-500 transition-colors"
+                          className="text-[10px] px-2 py-0.5 rounded border border-gray-700 text-gray-400 hover:text-gray-200"
                         >
                           Retry
                         </button>
@@ -189,7 +209,6 @@ export default function Home() {
                     </div>
                   </div>
                 );
-
                 if (href) {
                   return (
                     <Link key={repo.id} href={href}>
@@ -197,7 +216,6 @@ export default function Home() {
                     </Link>
                   );
                 }
-
                 return (
                   <div key={repo.id} className="cursor-default">
                     {inner}

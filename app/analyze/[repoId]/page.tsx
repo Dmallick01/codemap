@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import dagre from "dagre";
@@ -20,6 +20,8 @@ import "@xyflow/react/dist/style.css";
 
 import FileNode from "@/components/nodes/FileNode";
 import NodeDetail from "@/components/nodes/NodeDetail";
+import ExplorerToolbar from "@/components/ExplorerToolbar";
+import { useGraphExplorer } from "@/hooks/useGraphExplorer";
 import { useGraphStore } from "@/lib/store/graph";
 import type { FileNodeData } from "@/lib/store/graph";
 
@@ -114,14 +116,53 @@ export default function AnalyzePage() {
 
   const { selectedNode, setSelectedNode } = useGraphStore();
 
-  // Escape key closes NodeDetail
+  const explorer = useGraphExplorer(params.repoId, nodes, setSelectedNode);
+
+  const displayNodes = useMemo(
+    () =>
+      nodes.map((n) => ({
+        ...n,
+        selected:
+          explorer.currentNode?.id === n.id || selectedNode?.id === n.id,
+      })),
+    [nodes, explorer.currentNode?.id, selectedNode?.id],
+  );
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setSelectedNode(null);
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+
+      switch (e.key) {
+        case "Escape":
+          setSelectedNode(null);
+          break;
+        case "n":
+        case "N":
+        case "ArrowRight":
+          e.preventDefault();
+          explorer.goNext();
+          break;
+        case "p":
+        case "P":
+        case "ArrowLeft":
+          e.preventDefault();
+          explorer.goPrev();
+          break;
+        case "r":
+        case "R":
+          explorer.goRandom();
+          break;
+        case "?":
+          explorer.setShowHelp((v) => !v);
+          break;
+        default:
+          break;
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [setSelectedNode]);
+  }, [explorer, setSelectedNode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -198,13 +239,16 @@ export default function AnalyzePage() {
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      setSelectedNode({
-        id: node.id,
-        type: node.type ?? "fileNode",
-        data: node.data as FileNodeData,
-      });
+      const idx = explorer.ordered.findIndex((n) => n.id === node.id);
+      if (idx >= 0) explorer.focusAt(idx);
+      else
+        setSelectedNode({
+          id: node.id,
+          type: node.type ?? "fileNode",
+          data: node.data as FileNodeData,
+        });
     },
-    [setSelectedNode]
+    [explorer, setSelectedNode],
   );
 
   const onPaneClick = useCallback(() => {
@@ -340,9 +384,9 @@ export default function AnalyzePage() {
       )}
 
       {!loading && !error && nodes.length > 0 && (
-        <div className="flex-1 relative" style={{ minHeight: 0 }}>
+        <div className="flex-1 flex flex-col relative" style={{ minHeight: 0 }}>
           <ReactFlow
-            nodes={nodes}
+            nodes={displayNodes}
             edges={edges}
             nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
@@ -382,8 +426,19 @@ export default function AnalyzePage() {
             />
           </ReactFlow>
 
-          {/* Detail sidebar */}
           {selectedNode && <NodeDetail />}
+
+          <ExplorerToolbar
+            index={explorer.index}
+            total={explorer.total}
+            viewedCount={explorer.viewedCount}
+            currentPath={explorer.currentPath}
+            onPrev={explorer.goPrev}
+            onNext={explorer.goNext}
+            onRandom={explorer.goRandom}
+            showHelp={explorer.showHelp}
+            onToggleHelp={() => explorer.setShowHelp((v) => !v)}
+          />
         </div>
       )}
     </div>
