@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { parseGitHubUrl } from "@/lib/services/github";
 import { runLitePipeline } from "@/lib/pipeline/lite";
+import { formatDbError } from "@/lib/db-errors";
 import { runPipeline } from "@/lib/pipeline/run";
 
 export async function POST(req: NextRequest) {
@@ -69,8 +70,17 @@ export async function POST(req: NextRequest) {
     );
   } catch (err) {
     console.error("Ingest error:", err);
+    const message = formatDbError(err);
+    const schemaStale =
+      message.includes("schema") || message.includes("snapshot");
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: schemaStale
+          ? message
+          : process.env.NODE_ENV === "production"
+            ? "Internal server error"
+            : message,
+      },
       { status: 500 },
     );
   }

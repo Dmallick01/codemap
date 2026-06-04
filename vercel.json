@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma generate && node scripts/copy-wasm.js && next build",
+  "buildCommand": "prisma migrate deploy && prisma generate && node scripts/copy-wasm.js && next build",
   "functions": {
     "app/api/ingest/route.ts": {
       "maxDuration": 300

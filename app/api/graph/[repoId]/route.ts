@@ -5,10 +5,25 @@ import { analyzeFileSemantics, ROLE_META } from "@/lib/graph/semantic";
 import { buildSemanticLayout, type LayoutFileInput } from "@/lib/graph/layout";
 import { edgeStyle } from "@/lib/graph/semantic";
 import type { Edge } from "@xyflow/react";
+import { formatDbError } from "@/lib/db-errors";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ repoId: string }> },
+) {
+  try {
+    return await getGraphResponse(params);
+  } catch (err) {
+    console.error("Graph API error:", err);
+    return NextResponse.json(
+      { error: formatDbError(err) },
+      { status: 500 },
+    );
+  }
+}
+
+async function getGraphResponse(
+  params: Promise<{ repoId: string }>,
 ) {
   const { repoId } = await params;
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { formatDbError } from "@/lib/db-errors";
 import { parseSnapshot } from "@/lib/graph/snapshot";
 import { runGitHubLabTool } from "@/lib/services/github-lab";
 import {
@@ -8,6 +9,15 @@ import {
 } from "@/lib/github/lab-tool-registry";
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handleLabPost(req);
+  } catch (err) {
+    console.error("GitHub lab error:", err);
+    return NextResponse.json({ error: formatDbError(err) }, { status: 500 });
+  }
+}
+
+async function handleLabPost(req: NextRequest) {
   let body: {
     repoId?: string;
     repoUrl?: string;
