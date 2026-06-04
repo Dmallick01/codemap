@@ -26,7 +26,26 @@ export type LayoutFileInput = {
   summary?: string;
   imports?: string[];
   modules?: unknown[];
+  /** Keep snapshot / map roles — do not re-guess from path on relayout */
+  role?: ArchRole;
+  roleLabel?: string;
+  group?: string;
+  groupLabel?: string;
+  framework?: FileSemantics["framework"];
+  frameworkLabel?: string;
+  purpose?: string;
 };
+
+export function getEdgeSemanticType(edge: Edge): string {
+  const data = edge.data as { edgeType?: string } | undefined;
+  if (data?.edgeType) return data.edgeType;
+  if (typeof edge.label === "string") {
+    if (edge.label.includes("depends")) return "imports";
+    if (edge.label.includes("powers")) return "powers";
+    if (edge.label.includes("flows")) return "flows";
+  }
+  return "imports";
+}
 
 export type GroupNodeData = {
   label: string;
@@ -62,7 +81,7 @@ export function buildSemanticLayout(
 ): LayoutResult {
   const semantics = new Map<string, FileSemantics>();
   const enriched = files.map((f) => {
-    const sem = analyzeFileSemantics(f.path, f.imports ?? []);
+    const sem = semanticsFromInput(f);
     semantics.set(f.id, sem);
     return { ...f, sem };
   });
@@ -124,7 +143,7 @@ export function buildSemanticLayout(
     const meta = ROLE_META[bucket.role];
     const groupId = `group:${bucket.role}:${bucket.groupKey}`;
 
-    bucket.files.sort((a, b) => a.path.localeCompare(b.path));
+    bucket.files.sort((a, b) => a.path.localeCompare(b.path, undefined, { numeric: true }));
 
     const maxDepthInBucket = Math.max(
       0,
@@ -158,7 +177,8 @@ export function buildSemanticLayout(
     });
 
     bucket.files.forEach((file, i) => {
-      const d = depth.get(file.id) ?? 0;
+      const d =
+        MAP_DEPTH_STEP_X > 0 ? (depth.get(file.id) ?? 0) : 0;
       nodes.push({
         id: file.id,
         type: "fileNode",
@@ -205,7 +225,8 @@ function computeDependencyDepth(
   }
 
   for (const e of edges) {
-    if (e.type !== "imports" && e.type !== "powers") continue;
+    const edgeKind = getEdgeSemanticType(e);
+    if (edgeKind !== "imports" && edgeKind !== "powers") continue;
     if (!idSet.has(e.source) || !idSet.has(e.target)) continue;
     outgoing.get(e.source)!.push(e.target);
     incoming.get(e.target)!.push(e.source);
@@ -232,4 +253,22 @@ function computeDependencyDepth(
     if (!depth.has(id)) depth.set(id, 0);
   }
   return depth;
+}
+
+function semanticsFromInput(f: LayoutFileInput): FileSemantics {
+  if (f.role && f.group) {
+    const role = f.role as ArchRole;
+    const meta = ROLE_META[role] ?? ROLE_META.core;
+    return {
+      path: f.path,
+      role,
+      roleLabel: f.roleLabel ?? meta.label,
+      group: f.group,
+      groupLabel: f.groupLabel ?? f.group,
+      framework: f.framework ?? "generic",
+      frameworkLabel: f.frameworkLabel ?? "Application code",
+      purpose: f.purpose ?? meta.description,
+    };
+  }
+  return analyzeFileSemantics(f.path, f.imports ?? []);
 }

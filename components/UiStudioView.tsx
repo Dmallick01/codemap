@@ -27,12 +27,12 @@ import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import {
   buildUiStudioLayout,
   filterUiStudioFiles,
+  type UiLayoutInput,
 } from "@/lib/graph/ui-layout";
+import type { ArchRole } from "@/lib/graph/semantic";
 import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
 import { edgeStyle, edgeLabelPresentation } from "@/lib/graph/semantic";
 import type { FileNodeData } from "@/lib/store/graph";
-import type { LayoutFileInput } from "@/lib/graph/layout";
-
 const nodeTypes = { fileNode: FileNode };
 
 function styleEdges(eds: Edge[], focusId: string | null): Edge[] {
@@ -98,7 +98,7 @@ function UiStudioInner({
     });
   }, []);
 
-  const layoutInputs: LayoutFileInput[] = useMemo(() => {
+  const layoutInputs: UiLayoutInput[] = useMemo(() => {
     return rawNodes
       .filter((n) => n.type === "fileNode")
       .map((n) => {
@@ -108,7 +108,7 @@ function UiStudioInner({
           path: d.path ?? n.id,
           language: d.language,
           summary: d.summary,
-          role: d.role,
+          role: d.role as ArchRole | undefined,
           roleLabel: d.roleLabel,
           purpose: d.purpose,
           frameworkLabel: d.frameworkLabel,

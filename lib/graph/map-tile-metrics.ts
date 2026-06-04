@@ -18,7 +18,8 @@ export const MAP_ROLE_COL_GAP = 20;
 
 /** @deprecated Use per-role column packing in layout.ts */
 export const MAP_ROLE_STEP_X = 300;
-export const MAP_DEPTH_STEP_X = 24;
+/** Stagger imports inside a group — keep small so rows stay readable */
+export const MAP_DEPTH_STEP_X = 0;
 
 /** Height of a group containing `fileCount` file nodes */
 export function groupHeightForFileCount(fileCount: number): number {
