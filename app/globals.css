@@ -17,6 +17,11 @@
   --bg-glass-strong: #1a3226;
   --canvas-bg: #0d1812;
 
+  --map-node-bg: rgba(14, 36, 26, 0.48);
+  --map-node-bg-hover: rgba(18, 44, 32, 0.58);
+  --map-node-blur: 14px;
+  --map-node-shadow: 0 4px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 var(--glass-shine);
+
   --glass-border: rgba(74, 222, 128, 0.28);
   --glass-border-bright: rgba(110, 231, 160, 0.45);
   --glass-highlight: rgba(167, 243, 208, 0.08);
@@ -77,6 +82,11 @@
   --bg-glass: #f4faf6;
   --bg-glass-strong: #ffffff;
   --canvas-bg: #dcebe2;
+
+  --map-node-bg: rgba(255, 255, 255, 0.55);
+  --map-node-bg-hover: rgba(255, 255, 255, 0.72);
+  --map-node-blur: 12px;
+  --map-node-shadow: 0 4px 20px rgba(15, 60, 35, 0.1), inset 0 1px 0 var(--glass-shine);
 
   --glass-border: rgba(22, 163, 74, 0.25);
   --glass-border-bright: rgba(21, 128, 61, 0.4);
@@ -183,6 +193,47 @@ pre,
     16px 16px,
     80px 80px,
     80px 80px;
+}
+
+/* Map file tablets — translucent glass over canvas */
+.map-file-node {
+  backdrop-filter: blur(var(--map-node-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--map-node-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--map-node-shadow);
+}
+
+.map-file-node:hover:not(.map-file-node-selected) {
+  background: var(--map-node-bg-hover) !important;
+}
+
+.map-file-node-title {
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.map-file-node-path,
+.map-file-node-summary,
+.map-file-node-framework {
+  color: var(--text-muted);
+}
+
+.map-file-node-summary {
+  color: var(--text-secondary);
+}
+
+.map-group-label {
+  background: var(--map-node-bg);
+  backdrop-filter: blur(var(--map-node-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--map-node-blur)) saturate(var(--glass-saturate));
+  box-shadow: var(--map-node-shadow);
+}
+
+.map-group-label-sub {
+  color: var(--text-muted);
+}
+
+.map-group-label-title {
+  color: var(--text-secondary);
 }
 
 .map-canvas-bg {

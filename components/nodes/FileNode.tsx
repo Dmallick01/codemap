@@ -40,6 +40,14 @@ function getExtLabel(language: string | undefined): string {
   return map[language.toLowerCase()] ?? language.slice(0, 3).toUpperCase();
 }
 
+function nodeGlassBackground(roleBg: string, emphasis: "normal" | "bundle" | "selected") {
+  const mix =
+    emphasis === "selected" ? 42 : emphasis === "bundle" ? 28 : 22;
+  const tint =
+    emphasis === "bundle" ? "rgba(139, 92, 246, 0.18)" : roleBg;
+  return `color-mix(in srgb, ${tint} ${mix}%, var(--map-node-bg))`;
+}
+
 interface FileNodeProps {
   data: FileNodeData & { bundleSelected?: boolean };
   selected?: boolean;
@@ -53,40 +61,49 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
   const fname = getFilename(data.path);
   const extLabel = getExtLabel(data.language);
 
+  const emphasis = selected ? "selected" : inBundle ? "bundle" : "normal";
+
   return (
     <div
       className={[
-        "relative rounded-lg border bg-gray-900/98 overflow-visible",
-        "px-3 py-2.5 shadow-lg min-w-[200px] max-w-[240px]",
+        "map-file-node relative rounded-lg border overflow-visible",
+        "px-3 py-2.5 min-w-[200px] max-w-[240px]",
         "transition-all duration-150 cursor-pointer",
-        selected
-          ? "ring-2 shadow-2xl"
-          : inBundle
-            ? "ring-1 ring-violet-400/70"
-            : "hover:shadow-xl hover:border-gray-500",
+        selected ? "map-file-node-selected ring-2 shadow-2xl" : inBundle ? "ring-1 ring-violet-400/70" : "hover:shadow-xl",
       ].join(" ")}
       style={{
+        background: nodeGlassBackground(
+          roleMeta.bg,
+          emphasis,
+        ),
         borderColor: selected
           ? roleMeta.color
           : inBundle
             ? "rgba(167,139,250,0.6)"
             : roleMeta.border,
         boxShadow: selected
-          ? `0 0 0 1px ${roleMeta.color}40`
+          ? `0 0 0 1px ${roleMeta.color}40, var(--map-node-shadow)`
           : inBundle
-            ? "0 0 12px rgba(139,92,246,0.25)"
-            : undefined,
+            ? "0 0 12px rgba(139,92,246,0.25), var(--map-node-shadow)"
+            : "var(--map-node-shadow)",
+        ...(selected ? { ["--tw-ring-color" as string]: roleMeta.color } : {}),
       }}
     >
       <Handle
         type="target"
         position={Position.Left}
         className="!w-2.5 !h-2.5 !border-2"
-        style={{ background: roleMeta.color, borderColor: "#0f172a" }}
+        style={{ background: roleMeta.color, borderColor: "var(--canvas-bg)" }}
       />
 
       {inBundle && (
-        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-violet-600 text-[9px] font-bold flex items-center justify-center text-white border border-gray-950">
+        <span
+          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white border"
+          style={{
+            background: "rgba(139, 92, 246, 0.85)",
+            borderColor: "var(--canvas-bg)",
+          }}
+        >
           ✓
         </span>
       )}
@@ -109,28 +126,22 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
         </span>
       </div>
 
-      <p
-        className="text-[11px] font-semibold text-gray-100 truncate leading-tight"
-        title={data.path}
-      >
+      <p className="map-file-node-title font-semibold truncate leading-tight" title={data.path}>
         {fname}
       </p>
 
-      <p
-        className="text-[8px] text-gray-500 truncate mt-0.5 font-mono"
-        title={data.path}
-      >
+      <p className="map-file-node-path text-[10px] truncate mt-0.5 font-mono" title={data.path}>
         {data.path}
       </p>
 
       {data.summary && (
-        <p className="text-[9px] leading-snug text-gray-400 line-clamp-2 mt-1.5">
+        <p className="map-file-node-summary text-[10px] leading-snug line-clamp-2 mt-1.5">
           {data.summary}
         </p>
       )}
 
       {data.frameworkLabel && (
-        <p className="text-[8px] text-gray-600 mt-1 truncate">
+        <p className="map-file-node-framework text-[9px] mt-1 truncate opacity-80">
           {data.frameworkLabel}
         </p>
       )}
@@ -139,7 +150,7 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
         type="source"
         position={Position.Right}
         className="!w-2.5 !h-2.5 !border-2"
-        style={{ background: roleMeta.color, borderColor: "#0f172a" }}
+        style={{ background: roleMeta.color, borderColor: "var(--canvas-bg)" }}
       />
     </div>
   );

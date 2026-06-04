@@ -17,9 +17,8 @@ export default memo(function GroupNode({ data }: GroupNodeProps) {
       }}
     >
       <div
-        className="absolute -top-3 left-3 px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide flex items-center gap-1.5 shadow-md"
+        className="map-group-label absolute -top-3 left-3 px-2 py-0.5 rounded-md text-[11px] font-semibold tracking-wide flex items-center gap-1.5"
         style={{
-          background: "#0f172a",
           border: `1px solid ${data.border}`,
           color: data.color,
         }}
@@ -29,11 +28,11 @@ export default memo(function GroupNode({ data }: GroupNodeProps) {
           style={{ background: data.color }}
         />
         <span>{data.roleLabel}</span>
-        <span className="text-gray-500 font-normal">·</span>
-        <span className="text-gray-300 font-normal truncate max-w-[180px]">
+        <span className="map-group-label-sub font-normal">·</span>
+        <span className="map-group-label-title font-normal truncate max-w-[180px]">
           {data.label}
         </span>
-        <span className="text-gray-600 font-mono text-[9px]">
+        <span className="map-group-label-sub font-mono text-[10px]">
           {data.fileCount} files
         </span>
       </div>
