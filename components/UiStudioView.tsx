@@ -31,6 +31,8 @@ import {
 } from "@/lib/graph/ui-layout";
 import type { ArchRole } from "@/lib/graph/semantic";
 import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
+import { useMapSpacing } from "@/hooks/useMapSpacing";
+import MapSpacingControls from "@/components/MapSpacingControls";
 import { edgeStyle, edgeLabelPresentation } from "@/lib/graph/semantic";
 import type { FileNodeData } from "@/lib/store/graph";
 const nodeTypes = { fileNode: FileNode };
@@ -82,6 +84,8 @@ function UiStudioInner({
 }: Props) {
   const { fitView } = useReactFlow();
   const colorMode = useCodemapColorMode();
+  const { scale: spacingScale, setScale: setSpacingScale, reset: resetSpacing, resolved: spacingResolved } =
+    useMapSpacing();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [exportOpen, setExportOpen] = useState(false);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -126,8 +130,8 @@ function UiStudioInner({
     const filteredEdges = rawEdges.filter(
       (e) => uiIds.has(e.source) && uiIds.has(e.target),
     );
-    return buildUiStudioLayout(uiFiles, filteredEdges);
-  }, [uiFiles, rawEdges]);
+    return buildUiStudioLayout(uiFiles, filteredEdges, spacingScale);
+  }, [uiFiles, rawEdges, spacingScale.row, spacingScale.group, spacingScale.column]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(layoutNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(layoutEdges);
@@ -150,6 +154,12 @@ function UiStudioInner({
     const t = setTimeout(() => fitView({ padding: 0.2, duration: 400 }), 80);
     return () => clearTimeout(t);
   }, [layoutNodes.length, fitView]);
+
+  useEffect(() => {
+    if (!layoutNodes.length) return;
+    const t = setTimeout(() => fitView({ padding: 0.2, duration: 300 }), 120);
+    return () => clearTimeout(t);
+  }, [spacingResolved.roleColGap, spacingResolved.tileRowGap, layoutNodes.length, fitView]);
 
   const styledEdges = useMemo(
     () => styleEdges(edges, focusId),
@@ -266,6 +276,13 @@ function UiStudioInner({
         proOptions={{ hideAttribution: true }}
       >
         {!chromeOpen && <Controls position="bottom-left" />}
+        <div className="absolute z-20 left-3 bottom-14 pointer-events-none">
+          <MapSpacingControls
+            scale={spacingScale}
+            onChange={setSpacingScale}
+            onReset={resetSpacing}
+          />
+        </div>
         <MiniMap
           position="bottom-right"
           nodeColor={() => "var(--role-ui)"}

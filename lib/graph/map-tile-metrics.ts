@@ -5,16 +5,16 @@
 export const MAP_TILE_WIDTH = 300;
 export const MAP_TILE_HEIGHT = 144;
 /** Gap between stacked file rows inside a group */
-export const MAP_TILE_ROW_GAP = 8;
+export const MAP_TILE_ROW_GAP = 14;
 export const MAP_TILE_ROW_STRIDE = MAP_TILE_HEIGHT + MAP_TILE_ROW_GAP;
 
-export const MAP_GROUP_PAD_X = 16;
-export const MAP_GROUP_PAD_Y = 14;
-export const MAP_GROUP_PAD_BOTTOM = 10;
+export const MAP_GROUP_PAD_X = 20;
+export const MAP_GROUP_PAD_Y = 18;
+export const MAP_GROUP_PAD_BOTTOM = 14;
 /** Vertical gap between folder groups in the same role column */
-export const MAP_GROUP_GAP_Y = 12;
+export const MAP_GROUP_GAP_Y = 22;
 /** Horizontal gap between role columns (after tight column width) */
-export const MAP_ROLE_COL_GAP = 20;
+export const MAP_ROLE_COL_GAP = 36;
 
 /** @deprecated Use per-role column packing in layout.ts */
 export const MAP_ROLE_STEP_X = 300;

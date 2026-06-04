@@ -36,6 +36,8 @@ import type {
 } from "@/lib/export/repurpose-prompt";
 import { useBundleSelection } from "@/hooks/useBundleSelection";
 import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
+import { useMapSpacing } from "@/hooks/useMapSpacing";
+import MapSpacingControls from "@/components/MapSpacingControls";
 import GraphLegend from "@/components/GraphLegend";
 import RepoOverviewPanel, {
   type RepoOverviewMeta,
@@ -117,9 +119,12 @@ function AnalyzeGraphInner({
   onReanalyze,
   reanalyzing,
 }: Props) {
+  const { scale: spacingScale, setScale: setSpacingScale, reset: resetSpacing, resolved: spacingResolved } =
+    useMapSpacing();
+
   const laidOutNodes = useMemo(
-    () => relayoutArchitectureNodes(initialNodes, initialEdges),
-    [initialNodes, initialEdges],
+    () => relayoutArchitectureNodes(initialNodes, initialEdges, spacingScale),
+    [initialNodes, initialEdges, spacingScale.row, spacingScale.group, spacingScale.column],
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(laidOutNodes);
@@ -246,6 +251,15 @@ function AnalyzeGraphInner({
     );
     return () => clearTimeout(t);
   }, [fileNodesOnly.length, fitView, repoId]);
+
+  useEffect(() => {
+    if (!fileNodesOnly.length) return;
+    const t = setTimeout(
+      () => fitView({ padding: 0.14, duration: 300, maxZoom: 1.05 }),
+      120,
+    );
+    return () => clearTimeout(t);
+  }, [spacingResolved.tileRowGap, spacingResolved.groupGapY, spacingResolved.roleColGap, fileNodesOnly.length, fitView]);
 
   const toggleChrome = useCallback(() => {
     setChromeOpen((v) => !v);
@@ -375,6 +389,16 @@ function AnalyzeGraphInner({
         proOptions={{ hideAttribution: true }}
       >
         {!chromeOpen && <Controls position="bottom-left" />}
+        <div
+          className="absolute z-20 pointer-events-none"
+          style={{ left: 12, bottom: chromeOpen ? 240 : 56 }}
+        >
+          <MapSpacingControls
+            scale={spacingScale}
+            onChange={setSpacingScale}
+            onReset={resetSpacing}
+          />
+        </div>
         <MiniMap
           position="bottom-right"
           nodeColor={minimapColor}

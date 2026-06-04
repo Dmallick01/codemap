@@ -2,10 +2,15 @@ import type { Node, Edge } from "@xyflow/react";
 import type { FileNodeData } from "@/lib/store/graph";
 import { ROLE_META, type ArchRole } from "@/lib/graph/semantic";
 import { uiStudioCategory } from "@/lib/graph/path-heuristics";
-import { MAP_TILE_ROW_STRIDE, mapFileNodeStyle } from "./map-tile-metrics";
+import { mapFileNodeStyle } from "./map-tile-metrics";
+import {
+  DEFAULT_MAP_SPACING_SCALE,
+  resolveMapSpacing,
+  tileRowStride,
+  type MapSpacingScale,
+} from "./map-spacing";
 
-const COL_GAP = 20;
-const COL_START_Y = 32;
+const COL_START_Y = 40;
 
 export type UiLayoutInput = {
   id: string;
@@ -24,7 +29,10 @@ export type UiLayoutInput = {
 export function buildUiStudioLayout(
   files: UiLayoutInput[],
   graphEdges: Edge[],
+  spacingScale: MapSpacingScale = DEFAULT_MAP_SPACING_SCALE,
 ): { nodes: Node[]; edges: Edge[] } {
+  const spacing = resolveMapSpacing(spacingScale);
+  const rowStride = tileRowStride(spacing);
   const uiFiles = files.filter((f) => {
     const cat = uiStudioCategory(f.path);
     return cat !== "other" || f.role === "ui" || f.role === "entry";
@@ -54,7 +62,7 @@ export function buildUiStudioLayout(
       nodes.push({
         id: file.id,
         type: "fileNode",
-        position: { x: columnX, y: COL_START_Y + i * MAP_TILE_ROW_STRIDE },
+        position: { x: columnX, y: COL_START_Y + i * rowStride },
         data: {
           path: file.path,
           language: file.language ?? undefined,
@@ -69,7 +77,7 @@ export function buildUiStudioLayout(
       });
     });
 
-    columnX += mapFileNodeStyle.width + COL_GAP;
+    columnX += mapFileNodeStyle.width + spacing.roleColGap;
   }
 
   const edges = graphEdges.filter(

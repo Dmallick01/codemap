@@ -7,17 +7,16 @@ import {
   roleXIndex,
   analyzeFileSemantics,
 } from "./semantic";
+import { MAP_GROUP_PAD_X, MAP_GROUP_PAD_Y, MAP_DEPTH_STEP_X, mapFileNodeStyle } from "./map-tile-metrics";
 import {
-  MAP_TILE_ROW_STRIDE,
-  MAP_GROUP_PAD_X,
-  MAP_GROUP_PAD_Y,
-  MAP_GROUP_GAP_Y,
-  MAP_ROLE_COL_GAP,
-  MAP_DEPTH_STEP_X,
+  DEFAULT_MAP_SPACING_SCALE,
   groupHeightForFileCount,
   groupWidthForDepth,
-  mapFileNodeStyle,
-} from "./map-tile-metrics";
+  resolveMapSpacing,
+  tileRowStride,
+  type MapSpacingScale,
+  type ResolvedMapSpacing,
+} from "./map-spacing";
 
 export type LayoutFileInput = {
   id: string;
@@ -78,7 +77,9 @@ type Bucket = {
 export function buildSemanticLayout(
   files: LayoutFileInput[],
   graphEdges: Edge[],
+  spacingScale: MapSpacingScale = DEFAULT_MAP_SPACING_SCALE,
 ): LayoutResult {
+  const spacing: ResolvedMapSpacing = resolveMapSpacing(spacingScale);
   const semantics = new Map<string, FileSemantics>();
   const enriched = files.map((f) => {
     const sem = semanticsFromInput(f);
@@ -133,7 +134,7 @@ export function buildSemanticLayout(
     const w = roleMaxWidth.get(role);
     if (!w) continue;
     roleColumnX.set(role, columnX);
-    columnX += w + MAP_ROLE_COL_GAP;
+    columnX += w + spacing.roleColGap;
   }
 
   const nodes: Node[] = [];
@@ -152,7 +153,7 @@ export function buildSemanticLayout(
     const baseX = roleColumnX.get(bucket.role) ?? 0;
     const baseY = roleBandY.get(bucket.role) ?? 0;
     const groupWidth = groupWidthForDepth(maxDepthInBucket);
-    const groupHeight = groupHeightForFileCount(bucket.files.length);
+    const groupHeight = groupHeightForFileCount(bucket.files.length, spacing);
 
     nodes.push({
       id: groupId,
@@ -186,7 +187,7 @@ export function buildSemanticLayout(
         extent: "parent",
         position: {
           x: MAP_GROUP_PAD_X + d * MAP_DEPTH_STEP_X,
-          y: MAP_GROUP_PAD_Y + i * MAP_TILE_ROW_STRIDE,
+          y: MAP_GROUP_PAD_Y + i * tileRowStride(spacing),
         },
         data: {
           path: file.path,
@@ -205,7 +206,7 @@ export function buildSemanticLayout(
       });
     });
 
-    roleBandY.set(bucket.role, baseY + groupHeight + MAP_GROUP_GAP_Y);
+    roleBandY.set(bucket.role, baseY + groupHeight + spacing.groupGapY);
   }
 
   return { nodes, edges: graphEdges, semantics };

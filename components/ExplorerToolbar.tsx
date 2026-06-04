@@ -120,6 +120,9 @@ export default function ExplorerToolbar({
             <kbd style={{ color: "var(--text-primary)" }}>Shift</kbd>+click bundle
           </span>
           <span className="col-span-2 sm:col-span-4">
+            Bottom-left <strong style={{ color: "var(--text-secondary)" }}>Spacing</strong> — rows, stacks, columns (saved in browser)
+          </span>
+          <span className="col-span-2 sm:col-span-4">
             Security brief in the top HUD · UI Studio exports DESIGN.md + agent prompts (header → UI Studio).
           </span>
         </div>
