@@ -280,6 +280,10 @@ function AnalyzeGraphInner({
         case "G":
           setElementPromptOpen(true);
           break;
+        case "s":
+        case "S":
+          setSecurityOpen(true);
+          break;
         default:
           break;
       }
@@ -388,7 +392,7 @@ function AnalyzeGraphInner({
         onToggleChrome={toggleChrome}
         onPrev={explorer.goPrev}
         onNext={explorer.goNext}
-        onExport={bundle.count > 0 ? openExport : undefined}
+        onExport={openExport}
         onOpenLab={repoUrl ? () => setLabOpen(true) : undefined}
         onSecurity={() => setSecurityOpen(true)}
         onBuildElement={() => setElementPromptOpen(true)}

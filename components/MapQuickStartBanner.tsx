@@ -39,8 +39,11 @@ export default function MapQuickStartBanner({ repoId, variant }: Props) {
       <p className="panel-label mb-1">{variant === "ui" ? "UI Studio" : "Architecture map"} · quick start</p>
       <ul className="text-[10px] space-y-0.5" style={{ color: "var(--text-secondary)" }}>
         <li>
-          <kbd className="font-mono" style={{ color: "var(--accent)" }}>G</kbd> Prompts — build UI, build subsystem, or{" "}
-          <strong>explain this GitHub</strong> (wiki + improvements)
+          <kbd className="font-mono" style={{ color: "var(--accent)" }}>G</kbd> Prompts ·{" "}
+          <kbd className="font-mono" style={{ color: "var(--accent)" }}>S</kbd> Security · Export in HUD
+        </li>
+        <li>
+          Prompts: build UI, subsystem (agents/LLM), or <strong>explain this GitHub</strong> (wiki + improvements)
         </li>
         <li>
           <kbd className="font-mono" style={{ color: "var(--accent)" }}>L</kbd> GitHub Lab ·{" "}

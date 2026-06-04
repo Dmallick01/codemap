@@ -288,7 +288,7 @@ function UiStudioInner({
           Entry → Layouts → Components → Hooks → Styles
         </p>
         <p className="mt-1 font-mono" style={{ color: "var(--text-muted)" }}>
-          {uiFiles.length} files · G build prompt · E export · L lab
+          {uiFiles.length} files · G prompts · E export · S security · L lab
         </p>
       </div>
 

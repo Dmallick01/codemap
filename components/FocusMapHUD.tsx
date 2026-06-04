@@ -101,9 +101,9 @@ export default function FocusMapHUD({
             Security
           </button>
         )}
-        {bundleCount > 0 && onExport && (
-          <button type="button" onClick={onExport} className="btn-blueprint">
-            Export {bundleCount}
+        {onExport && (
+          <button type="button" onClick={onExport} className="btn-blueprint" title="Export capability prompt">
+            {bundleCount > 0 ? `Export ${bundleCount}` : "Export"}
           </button>
         )}
         <button
