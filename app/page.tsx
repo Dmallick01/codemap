@@ -92,10 +92,16 @@ export default function Home() {
             CodeMap Lite — seconds, not minutes
           </p>
           <p className="text-lg text-gray-400 max-w-lg mx-auto">
-            Paste a GitHub URL to see what the project is, how folders relate,
-            and where to start reading. Uses the GitHub API only — no zip
-            download, no AI, no full-repo parsing.
+            Learn any GitHub repo, tour its architecture, then export selective
+            capability prompts—like gitingest, but only the pieces you choose for
+            your own project.
           </p>
+          <Link
+            href="/library"
+            className="inline-block mt-3 text-sm text-violet-400/90 hover:text-violet-300 transition-colors"
+          >
+            Open repo library →
+          </Link>
           <a
             href="https://github.com/Dmallick01/codemap"
             target="_blank"
@@ -170,9 +176,12 @@ export default function Home() {
             <li>We pick ~30 anchor files (README, routes, main folders)</li>
             <li>Colored map shows roles and how layers connect</li>
             <li>
-              Repo tour (HF Viewer–style): <kbd className="text-gray-300 px-1">N</kbd> /{" "}
-              <kbd className="text-gray-300 px-1">P</kbd> through anchor files with
-              connections
+              Tour: <kbd className="text-gray-300 px-1">N</kbd> /{" "}
+              <kbd className="text-gray-300 px-1">P</kbd> through anchor files
+            </li>
+            <li>
+              <kbd className="text-gray-300 px-1">Shift</kbd>+click to bundle files;
+              export repurposing prompt (+ optional source from GitHub)
             </li>
           </ol>
         </div>

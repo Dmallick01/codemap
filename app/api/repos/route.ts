@@ -1,10 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const limit = Math.min(
+    50,
+    parseInt(req.nextUrl.searchParams.get("limit") || "10", 10) || 10,
+  );
+
   const repos = await prisma.repo.findMany({
     orderBy: { createdAt: "desc" },
-    take: 10,
+    take: limit,
     select: {
       id: true,
       name: true,

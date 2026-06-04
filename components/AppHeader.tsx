@@ -11,7 +11,12 @@ export default function AppHeader() {
         Code<span className="text-blue-400">Map</span>
       </Link>
 
-      {/* GitHub link */}
+      <nav className="flex items-center gap-4 text-xs text-gray-500">
+        <Link href="/library" className="hover:text-violet-300 transition-colors">
+          Library
+        </Link>
+      </nav>
+
       <a
         href="https://github.com/Dmallick01/codemap"
         target="_blank"

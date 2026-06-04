@@ -41,11 +41,12 @@ function getExtLabel(language: string | undefined): string {
 }
 
 interface FileNodeProps {
-  data: FileNodeData;
+  data: FileNodeData & { bundleSelected?: boolean };
   selected?: boolean;
 }
 
 export default memo(function FileNode({ data, selected }: FileNodeProps) {
+  const inBundle = !!data.bundleSelected;
   const langStyle = LANG_STYLES[data.language?.toLowerCase() ?? ""] ?? DEFAULT_LANG;
   const role = (data.role as ArchRole) ?? "core";
   const roleMeta = ROLE_META[role] ?? ROLE_META.core;
@@ -55,16 +56,26 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
   return (
     <div
       className={[
-        "relative rounded-lg border bg-gray-900/98",
+        "relative rounded-lg border bg-gray-900/98 overflow-visible",
         "px-3 py-2.5 shadow-lg min-w-[200px] max-w-[240px]",
         "transition-all duration-150 cursor-pointer",
         selected
           ? "ring-2 shadow-2xl"
-          : "hover:shadow-xl hover:border-gray-500",
+          : inBundle
+            ? "ring-1 ring-violet-400/70"
+            : "hover:shadow-xl hover:border-gray-500",
       ].join(" ")}
       style={{
-        borderColor: selected ? roleMeta.color : roleMeta.border,
-        boxShadow: selected ? `0 0 0 1px ${roleMeta.color}40` : undefined,
+        borderColor: selected
+          ? roleMeta.color
+          : inBundle
+            ? "rgba(167,139,250,0.6)"
+            : roleMeta.border,
+        boxShadow: selected
+          ? `0 0 0 1px ${roleMeta.color}40`
+          : inBundle
+            ? "0 0 12px rgba(139,92,246,0.25)"
+            : undefined,
       }}
     >
       <Handle
@@ -73,6 +84,12 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
         className="!w-2.5 !h-2.5 !border-2"
         style={{ background: roleMeta.color, borderColor: "#0f172a" }}
       />
+
+      {inBundle && (
+        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-violet-600 text-[9px] font-bold flex items-center justify-center text-white border border-gray-950">
+          ✓
+        </span>
+      )}
 
       <div className="flex items-center gap-1 mb-1">
         <span

@@ -10,6 +10,8 @@ type Props = {
   onRandom: () => void;
   showHelp: boolean;
   onToggleHelp: () => void;
+  bundleCount?: number;
+  onExportBundle?: () => void;
 };
 
 export default function ExplorerToolbar({
@@ -22,6 +24,8 @@ export default function ExplorerToolbar({
   onRandom,
   showHelp,
   onToggleHelp,
+  bundleCount = 0,
+  onExportBundle,
 }: Props) {
   if (total === 0) return null;
 
@@ -71,6 +75,16 @@ export default function ExplorerToolbar({
           {currentPath}
         </span>
 
+        {bundleCount > 0 && onExportBundle && (
+          <button
+            type="button"
+            onClick={onExportBundle}
+            className="px-2.5 py-1 text-[11px] rounded border border-violet-500/50 text-violet-300 hover:bg-violet-500/10"
+          >
+            Export {bundleCount} →
+          </button>
+        )}
+
         <div className="flex-1" />
 
         <button
@@ -98,9 +112,12 @@ export default function ExplorerToolbar({
           <span>
             <kbd className="text-gray-300">Esc</kbd> Close panel
           </span>
+          <span>
+            <kbd className="text-gray-300">Shift</kbd>+click toggle bundle
+          </span>
           <span className="col-span-2 sm:col-span-4 text-gray-600">
-            HF Viewer–style: one anchor file at a time, with connections on the
-            map. Progress auto-saves — resume by reopening this repo.
+            Tour one file at a time; shift+click builds a selective export bundle
+            (gitingest-style prompts for your project).
           </span>
         </div>
       )}

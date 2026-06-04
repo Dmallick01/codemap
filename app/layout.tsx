@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CodeMap",
-  description: "AI-powered code deconstructor",
+  description: "Learn repos and export selective capability prompts for your projects",
 };
 
 export default function RootLayout({

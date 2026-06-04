@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import {
   ReactFlow,
   useNodesState,
@@ -22,6 +22,13 @@ import GroupNode from "@/components/nodes/GroupNode";
 import NodeDetail from "@/components/nodes/NodeDetail";
 import ExplorerToolbar from "@/components/ExplorerToolbar";
 import SpecimenPanel from "@/components/SpecimenPanel";
+import ExportPromptSheet from "@/components/ExportPromptSheet";
+import BundleBar from "@/components/BundleBar";
+import type {
+  RepurposeExportContext,
+  BundleExportContext,
+} from "@/lib/export/repurpose-prompt";
+import { useBundleSelection } from "@/hooks/useBundleSelection";
 import GraphLegend from "@/components/GraphLegend";
 import RepoOverviewPanel, {
   type RepoOverviewMeta,
@@ -95,6 +102,7 @@ function AnalyzeGraphInner({
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const { fitView } = useReactFlow();
   const { selectedNode, setSelectedNode } = useGraphStore();
+  const [exportOpen, setExportOpen] = useState(false);
 
   const fileNodesOnly = useMemo(
     () => nodes.filter((n) => n.type === "fileNode"),
@@ -108,18 +116,57 @@ function AnalyzeGraphInner({
     setSelectedNode,
   );
 
+  const bundle = useBundleSelection(repoId, fileNodesOnly);
+
   const focusId =
     explorer.currentNode?.id ?? selectedNode?.id ?? null;
 
+  const singleExport: RepurposeExportContext | null = useMemo(() => {
+    if (!explorer.currentNode || !explorer.currentData) return null;
+    return {
+      repoName,
+      repoUrl,
+      mapMode,
+      nodeId: explorer.currentNode.id,
+      data: explorer.currentData,
+      neighbors: explorer.neighbors,
+    };
+  }, [
+    explorer.currentNode,
+    explorer.currentData,
+    explorer.neighbors,
+    repoName,
+    repoUrl,
+    mapMode,
+  ]);
+
+  const bundleExport: Omit<BundleExportContext, "bundlePaths" | "includeNeighbors"> | null =
+    useMemo(() => {
+      if (bundle.anchors.length === 0) return null;
+      return {
+        repoName,
+        repoUrl,
+        mapMode,
+        anchors: bundle.anchors,
+        fileNodes: fileNodesOnly,
+        edges,
+      };
+    }, [bundle.anchors, fileNodesOnly, edges, repoName, repoUrl, mapMode]);
+
   const highlightIds = useMemo(() => {
-    if (!focusId) return null;
-    const set = new Set<string>([focusId]);
-    for (const e of edges) {
-      if (e.source === focusId) set.add(e.target);
-      if (e.target === focusId) set.add(e.source);
+    const set = new Set<string>();
+    if (focusId) set.add(focusId);
+    for (const id of bundle.selectedIds) set.add(id);
+    const anchor = focusId ?? bundle.selectedIds[0];
+    if (anchor) {
+      for (const e of edges) {
+        if (e.source === anchor) set.add(e.target);
+        if (e.target === anchor) set.add(e.source);
+      }
     }
+    if (set.size === 0) return null;
     return set;
-  }, [focusId, edges]);
+  }, [focusId, bundle.selectedIds, edges]);
 
   const displayNodes = useMemo(
     () =>
@@ -128,12 +175,18 @@ function AnalyzeGraphInner({
           n.type === "fileNode" &&
           (n.id === explorer.currentNode?.id || n.id === selectedNode?.id);
         const dimmed =
-          focusId &&
+          highlightIds &&
           n.type === "fileNode" &&
-          !highlightIds?.has(n.id);
+          !highlightIds.has(n.id);
+        const bundleSelected =
+          n.type === "fileNode" && bundle.isSelected(n.id);
         return {
           ...n,
           selected: isFocus,
+          data:
+            n.type === "fileNode"
+              ? { ...n.data, bundleSelected }
+              : n.data,
           style: {
             ...n.style,
             opacity: dimmed ? 0.22 : 1,
@@ -145,8 +198,8 @@ function AnalyzeGraphInner({
       nodes,
       explorer.currentNode?.id,
       selectedNode?.id,
-      focusId,
       highlightIds,
+      bundle,
     ],
   );
 
@@ -204,13 +257,21 @@ function AnalyzeGraphInner({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [explorer, setSelectedNode]);
 
+  const openExport = useCallback(() => {
+    setExportOpen(true);
+  }, []);
+
   const onNodeClick = useCallback(
-    (_: React.MouseEvent, node: Node) => {
+    (ev: React.MouseEvent, node: Node) => {
       if (node.type !== "fileNode") return;
+      if (ev.shiftKey) {
+        bundle.toggle(node.id);
+        return;
+      }
       const idx = explorer.ordered.findIndex((n) => n.id === node.id);
       if (idx >= 0) explorer.focusAt(idx);
     },
-    [explorer],
+    [explorer, bundle],
   );
 
   const onPaneClick = useCallback(() => {
@@ -312,13 +373,41 @@ function AnalyzeGraphInner({
           {selectedNode && <NodeDetail />}
         </div>
 
+        <BundleBar
+          anchors={bundle.anchors}
+          max={bundle.max}
+          atCap={bundle.atCap}
+          onClear={bundle.clear}
+          onRemove={bundle.remove}
+          onExport={openExport}
+          onFocus={explorer.focusIdByNodeId}
+        />
         <SpecimenPanel
           index={explorer.index}
           total={explorer.total}
           viewedCount={explorer.viewedCount}
           data={explorer.currentData}
+          nodeId={explorer.currentNode?.id ?? null}
           neighbors={explorer.neighbors}
           onJumpTo={explorer.focusIdByNodeId}
+          onExportPrompt={openExport}
+          bundleCount={bundle.count}
+          inBundle={
+            explorer.currentNode
+              ? bundle.isSelected(explorer.currentNode.id)
+              : false
+          }
+          onToggleBundle={() => {
+            if (explorer.currentNode) bundle.toggle(explorer.currentNode.id);
+          }}
+          atBundleCap={bundle.atCap}
+        />
+        <ExportPromptSheet
+          open={exportOpen}
+          onClose={() => setExportOpen(false)}
+          repoId={repoId}
+          single={bundle.count === 0 ? singleExport : null}
+          bundle={bundle.count > 0 ? bundleExport : null}
         />
         <ExplorerToolbar
           index={explorer.index}
@@ -330,6 +419,8 @@ function AnalyzeGraphInner({
           onRandom={explorer.goRandom}
           showHelp={explorer.showHelp}
           onToggleHelp={() => explorer.setShowHelp((v) => !v)}
+          bundleCount={bundle.count}
+          onExportBundle={bundle.count > 0 ? openExport : undefined}
         />
       </div>
     </div>

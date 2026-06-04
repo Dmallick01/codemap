@@ -9,8 +9,14 @@ type Props = {
   total: number;
   viewedCount: number;
   data: FileNodeData | null;
+  nodeId: string | null;
   neighbors: NodeNeighbors;
   onJumpTo: (nodeId: string) => void;
+  onExportPrompt: () => void;
+  bundleCount: number;
+  inBundle: boolean;
+  onToggleBundle: () => void;
+  atBundleCap: boolean;
 };
 
 function LinkList({
@@ -62,8 +68,14 @@ export default function SpecimenPanel({
   total,
   viewedCount,
   data,
+  nodeId,
   neighbors,
   onJumpTo,
+  onExportPrompt,
+  bundleCount,
+  inBundle,
+  onToggleBundle,
+  atBundleCap,
 }: Props) {
   if (!data?.path) return null;
 
@@ -90,9 +102,9 @@ export default function SpecimenPanel({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="text-[9px] text-gray-600 mt-1">
-          {viewedCount} of {total} explored ({viewedPct}%) · auto-saves like HF
-          Viewer
+          <p className="text-[9px] text-gray-600 mt-1">
+          {viewedCount} of {total} explored ({viewedPct}%) · selective export like
+          gitingest
         </p>
       </div>
 
@@ -131,19 +143,46 @@ export default function SpecimenPanel({
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-[200px] lg:min-w-[280px]">
-          <LinkList
-            title="Connects to →"
-            items={neighbors.outgoing}
-            onJumpTo={onJumpTo}
-          />
-          <LinkList
-            title="← Used by"
-            items={neighbors.incoming}
-            onJumpTo={onJumpTo}
-          />
+        <div className="flex flex-col gap-2 min-w-[200px] lg:min-w-[280px]">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={!nodeId || (!inBundle && atBundleCap)}
+              onClick={onToggleBundle}
+              className={`flex-1 text-xs font-medium px-2 py-2 rounded-lg border transition-colors disabled:opacity-40 ${
+                inBundle
+                  ? "border-violet-400 bg-violet-500/20 text-violet-200"
+                  : "border-gray-700 text-gray-400 hover:border-violet-500/50"
+              }`}
+            >
+              {inBundle ? "In bundle ✓" : "Add to bundle"}
+            </button>
+            <button
+              type="button"
+              disabled={!nodeId}
+              onClick={onExportPrompt}
+              className="flex-1 text-xs font-medium px-2 py-2 rounded-lg border border-violet-500/40 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 transition-colors disabled:opacity-40"
+            >
+              {bundleCount > 0 ? `Export (${bundleCount})` : "Export prompt"}
+            </button>
+          </div>
+          <p className="text-[9px] text-gray-600">
+            Shift+click nodes to multi-select · selective gitingest, not whole repo
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <LinkList
+              title="Connects to →"
+              items={neighbors.outgoing}
+              onJumpTo={onJumpTo}
+            />
+            <LinkList
+              title="← Used by"
+              items={neighbors.incoming}
+              onJumpTo={onJumpTo}
+            />
+          </div>
           {!neighbors.outgoing.length && !neighbors.incoming.length && (
-            <p className="text-[10px] text-gray-600 col-span-2 italic">
+            <p className="text-[10px] text-gray-600 italic">
               No graph edges yet — structural links appear after ingest. The map
               still shows where this file sits in the project layers.
             </p>
