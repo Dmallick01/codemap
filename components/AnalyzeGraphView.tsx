@@ -366,55 +366,63 @@ function AnalyzeGraphInner({
   return (
     <div
       className="map-view-root relative overflow-hidden"
-      style={{
-        height: "calc(100vh - var(--header-h))",
-        ["--map-dock-reserve" as string]: `${dock.reservePx}px`,
-      }}
+      style={{ height: "calc(100vh - var(--header-h))" }}
     >
-      <ReactFlow
-        nodes={displayNodes}
-        edges={styledEdges}
-        nodeTypes={nodeTypes}
-        colorMode={colorMode}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={onNodeClick}
-        onPaneClick={onPaneClick}
-        minZoom={0.04}
-        maxZoom={2}
-        nodesDraggable
-        nodesConnectable={false}
-        elementsSelectable
-        className="map-canvas-bg"
-        proOptions={{ hideAttribution: true }}
+      <div
+        className="map-flow-host"
+        style={{ bottom: dock.reservePx }}
       >
-        {!chromeOpen && <Controls position="bottom-left" />}
-        <div
-          className="absolute z-20 pointer-events-none"
-          style={{ left: 12, bottom: dock.reservePx + 12 }}
+        <ReactFlow
+          nodes={displayNodes}
+          edges={styledEdges}
+          nodeTypes={nodeTypes}
+          colorMode={colorMode}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
+          minZoom={0.04}
+          maxZoom={2}
+          nodesDraggable
+          nodesConnectable={false}
+          elementsSelectable
+          className="map-canvas-bg"
+          proOptions={{ hideAttribution: true }}
         >
-          <MapSpacingControls
-            scale={spacingScale}
-            onChange={setSpacingScale}
-            onReset={resetSpacing}
+          {!chromeOpen && (
+            <Controls
+              position="bottom-left"
+              style={{ marginBottom: 8 }}
+            />
+          )}
+          <MiniMap
+            position="bottom-right"
+            nodeColor={minimapColor}
+            maskColor="var(--minimap-mask)"
+            style={{
+              marginBottom: 8,
+              marginRight: 12,
+            }}
           />
-        </div>
-        <MiniMap
-          position="bottom-right"
-          nodeColor={minimapColor}
-          maskColor="var(--minimap-mask)"
-          style={{
-            marginBottom: dock.reservePx + 12,
-            marginRight: 12,
-          }}
+          <Background
+            variant={BackgroundVariant.Lines}
+            gap={24}
+            size={1}
+            color="var(--grid-line)"
+          />
+        </ReactFlow>
+      </div>
+
+      <div
+        className="absolute z-20 pointer-events-none"
+        style={{ left: 12, bottom: dock.reservePx + 12 }}
+      >
+        <MapSpacingControls
+          scale={spacingScale}
+          onChange={setSpacingScale}
+          onReset={resetSpacing}
         />
-        <Background
-          variant={BackgroundVariant.Lines}
-          gap={24}
-          size={1}
-          color="var(--grid-line)"
-        />
-      </ReactFlow>
+      </div>
 
       <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-28 left-3 z-20 max-w-sm" />
 

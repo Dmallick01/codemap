@@ -258,56 +258,53 @@ function UiStudioInner({
   return (
     <div
       className="map-view-root relative overflow-hidden"
-      style={{
-        height: "calc(100vh - var(--header-h))",
-        ["--map-dock-reserve" as string]: `${dock.reservePx}px`,
-      }}
+      style={{ height: "calc(100vh - var(--header-h))" }}
     >
-      <ReactFlow
-        nodes={displayNodes}
-        edges={styledEdges}
-        nodeTypes={nodeTypes}
-        colorMode={colorMode}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={onNodeClick}
-        onPaneClick={() => {
-          setFocusId(null);
-          setSelectedIds([]);
-        }}
-        minZoom={0.1}
-        maxZoom={1.8}
-        nodesDraggable
-        className="map-canvas-bg"
-        proOptions={{ hideAttribution: true }}
-      >
-        {!chromeOpen && <Controls position="bottom-left" />}
-        <div
-          className="absolute z-20 left-3 pointer-events-none"
-          style={{ bottom: dock.reservePx + 12 }}
-        >
-          <MapSpacingControls
-            scale={spacingScale}
-            onChange={setSpacingScale}
-            onReset={resetSpacing}
-          />
-        </div>
-        <MiniMap
-          position="bottom-right"
-          nodeColor={() => "var(--role-ui)"}
-          maskColor="var(--minimap-mask)"
-          style={{
-            marginBottom: dock.reservePx + 12,
-            marginRight: 12,
+      <div className="map-flow-host" style={{ bottom: dock.reservePx }}>
+        <ReactFlow
+          nodes={displayNodes}
+          edges={styledEdges}
+          nodeTypes={nodeTypes}
+          colorMode={colorMode}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeClick={onNodeClick}
+          onPaneClick={() => {
+            setFocusId(null);
+            setSelectedIds([]);
           }}
+          minZoom={0.1}
+          maxZoom={1.8}
+          nodesDraggable
+          className="map-canvas-bg"
+          proOptions={{ hideAttribution: true }}
+        >
+          {!chromeOpen && <Controls position="bottom-left" style={{ marginBottom: 8 }} />}
+          <MiniMap
+            position="bottom-right"
+            nodeColor={() => "var(--role-ui)"}
+            maskColor="var(--minimap-mask)"
+            style={{ marginBottom: 8, marginRight: 12 }}
+          />
+          <Background
+            variant={BackgroundVariant.Lines}
+            gap={24}
+            size={1}
+            color="var(--grid-line)"
+          />
+        </ReactFlow>
+      </div>
+
+      <div
+        className="absolute z-20 left-3 pointer-events-none"
+        style={{ bottom: dock.reservePx + 12 }}
+      >
+        <MapSpacingControls
+          scale={spacingScale}
+          onChange={setSpacingScale}
+          onReset={resetSpacing}
         />
-        <Background
-          variant={BackgroundVariant.Lines}
-          gap={24}
-          size={1}
-          color="var(--grid-line)"
-        />
-      </ReactFlow>
+      </div>
 
       <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-3 left-3 z-20 max-w-[260px]" />
 
