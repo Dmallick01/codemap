@@ -1,38 +1,42 @@
 @import "tailwindcss";
 
-/* ── Design tokens (F1) ── */
-:root {
+/* ── Dark theme (default) — green blueprint grid ── */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
   --header-h: 2.75rem;
 
-  --bg-base: #060a12;
-  --bg-elevated: #0c1220;
-  --bg-panel: rgba(12, 18, 32, 0.92);
-  --bg-glass: rgba(8, 14, 28, 0.78);
+  --bg-base: #050a08;
+  --bg-elevated: #0a120e;
+  --bg-panel: rgba(10, 20, 14, 0.92);
+  --bg-glass: rgba(8, 16, 12, 0.78);
+  --canvas-bg: #030806;
 
-  --border-subtle: rgba(56, 189, 248, 0.12);
-  --border-default: rgba(56, 189, 248, 0.22);
-  --border-strong: rgba(56, 189, 248, 0.38);
+  --border-subtle: rgba(34, 197, 94, 0.12);
+  --border-default: rgba(34, 197, 94, 0.24);
+  --border-strong: rgba(34, 197, 94, 0.42);
 
-  --text-primary: #e8eef7;
-  --text-secondary: #8ba3c7;
-  --text-muted: #5c7294;
-  --text-mono: #7dd3fc;
+  --text-primary: #e8f5ec;
+  --text-secondary: #8fb39a;
+  --text-muted: #5c7a66;
+  --text-mono: #6ee7a0;
 
-  --accent: #38bdf8;
-  --accent-dim: rgba(56, 189, 248, 0.15);
-  --accent-glow: rgba(56, 189, 248, 0.35);
+  --accent: #34d399;
+  --accent-hover: #4ade80;
+  --accent-dim: rgba(52, 211, 153, 0.14);
+  --accent-glow: rgba(52, 211, 153, 0.35);
 
-  --grid-line: rgba(56, 189, 248, 0.06);
-  --grid-line-major: rgba(56, 189, 248, 0.11);
+  --grid-line: rgba(34, 197, 94, 0.07);
+  --grid-line-major: rgba(34, 197, 94, 0.12);
 
-  /* Architecture roles (A4 hero colors) */
   --role-entry: #f472b6;
   --role-routing: #a78bfa;
-  --role-ui: #38bdf8;
-  --role-api: #34d399;
+  --role-ui: #34d399;
+  --role-api: #2dd4bf;
   --role-core: #fbbf24;
   --role-tool: #fb923c;
-  --role-data: #2dd4bf;
+  --role-data: #22d3ee;
   --role-config: #94a3b8;
   --role-test: #64748b;
 
@@ -41,8 +45,49 @@
   --radius-lg: 12px;
 
   --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.45);
-  --lab-glow: rgba(45, 212, 191, 0.25);
-  --lab-accent: #2dd4bf;
+  --lab-accent: var(--accent);
+  --lab-glow: rgba(52, 211, 153, 0.28);
+  --backdrop: rgba(2, 8, 5, 0.65);
+  --minimap-mask: rgba(3, 8, 6, 0.88);
+  --sheet-bg: #0a120e;
+  --error: #f87171;
+}
+
+/* ── Light theme — green blueprint grid ── */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-base: #eef4f0;
+  --bg-elevated: #ffffff;
+  --bg-panel: rgba(255, 255, 255, 0.94);
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --canvas-bg: #e4ede7;
+
+  --border-subtle: rgba(22, 163, 74, 0.14);
+  --border-default: rgba(22, 163, 74, 0.28);
+  --border-strong: rgba(22, 163, 74, 0.45);
+
+  --text-primary: #0f1a14;
+  --text-secondary: #3d5c48;
+  --text-muted: #6b8a75;
+  --text-mono: #15803d;
+
+  --accent: #16a34a;
+  --accent-hover: #22c55e;
+  --accent-dim: rgba(22, 163, 74, 0.1);
+  --accent-glow: rgba(22, 163, 74, 0.22);
+
+  --grid-line: rgba(22, 163, 74, 0.09);
+  --grid-line-major: rgba(22, 163, 74, 0.16);
+
+  --role-ui: #16a34a;
+
+  --shadow-panel: 0 8px 28px rgba(15, 40, 24, 0.1);
+  --lab-glow: rgba(22, 163, 74, 0.2);
+  --backdrop: rgba(15, 30, 20, 0.35);
+  --minimap-mask: rgba(228, 237, 231, 0.92);
+  --sheet-bg: #ffffff;
+  --error: #dc2626;
 }
 
 @keyframes lab-in {
@@ -76,6 +121,7 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   background: var(--bg-base);
   color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 code,
@@ -84,7 +130,6 @@ pre,
   font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-/* Blueprint grid (A4) */
 .blueprint-grid {
   background-color: var(--bg-base);
   background-image:
@@ -100,14 +145,13 @@ pre,
 }
 
 .map-canvas-bg {
-  background-color: #040810;
+  background-color: var(--canvas-bg);
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* Panels */
 .panel-blueprint {
   background: var(--bg-panel);
   border: 1px solid var(--border-default);
@@ -142,14 +186,18 @@ pre,
 
 .btn-blueprint-primary {
   border-color: var(--accent);
-  color: var(--bg-base);
+  color: #ffffff;
   background: var(--accent);
   font-weight: 600;
 }
 
+[data-theme="light"] .btn-blueprint-primary {
+  color: #ffffff;
+}
+
 .btn-blueprint-primary:hover {
-  background: #7dd3fc;
-  border-color: #7dd3fc;
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .nav-tab {
@@ -172,7 +220,6 @@ pre,
   background: var(--accent-dim);
 }
 
-/* React Flow overrides */
 .react-flow__controls {
   box-shadow: var(--shadow-panel) !important;
 }
@@ -187,22 +234,22 @@ pre,
   border: 1px solid var(--border-default) !important;
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-panel) !important;
+  background: var(--bg-elevated) !important;
 }
 
-/* GitHub Lab drawer */
 .lab-backdrop {
-  background: rgba(2, 6, 14, 0.65);
+  background: var(--backdrop);
   backdrop-filter: blur(4px);
 }
 
 .lab-drawer {
   background: linear-gradient(
     165deg,
-    rgba(10, 18, 32, 0.98) 0%,
-    rgba(6, 10, 18, 0.99) 100%
+    var(--bg-panel) 0%,
+    var(--bg-elevated) 100%
   );
   border-left: 1px solid var(--border-default);
-  box-shadow: -12px 0 48px rgba(0, 0, 0, 0.5);
+  box-shadow: -12px 0 48px rgba(0, 0, 0, 0.15);
 }
 
 .lab-drawer-header {
@@ -222,14 +269,14 @@ pre,
 }
 
 .lab-tool-card:hover:not(:disabled) {
-  border-color: var(--lab-accent);
-  background: rgba(45, 212, 191, 0.08);
+  border-color: var(--accent);
+  background: var(--accent-dim);
   transform: translateX(2px);
 }
 
 .lab-tool-card-active {
-  border-color: var(--lab-accent);
-  background: rgba(45, 212, 191, 0.12);
+  border-color: var(--accent);
+  background: var(--accent-dim);
 }
 
 .lab-tool-card:disabled {
@@ -239,7 +286,7 @@ pre,
 
 .lab-tool-icon {
   font-size: 14px;
-  color: var(--lab-accent);
+  color: var(--accent);
   width: 1.25rem;
   text-align: center;
 }
@@ -260,7 +307,7 @@ pre,
   width: 14px;
   height: 14px;
   border: 2px solid var(--border-default);
-  border-top-color: var(--lab-accent);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: lab-spin 0.7s linear infinite;
 }
@@ -295,7 +342,7 @@ pre,
   font-size: 12px;
   font-weight: 600;
   font-family: var(--font-geist-mono), monospace;
-  color: var(--lab-accent);
+  color: var(--accent);
   margin-top: 0.15rem;
 }
 
@@ -334,7 +381,7 @@ pre,
 }
 
 .lab-result-error {
-  border: 1px solid;
+  border: 1px solid rgba(248, 113, 113, 0.4);
   background: rgba(248, 113, 113, 0.08);
 }
 
@@ -365,4 +412,33 @@ pre,
   border: 1px solid var(--border-subtle);
   color: var(--text-muted);
   background: var(--bg-elevated);
+}
+
+/* Theme-aware overlays (export sheets, node detail) */
+.sheet-overlay {
+  background: var(--backdrop);
+}
+
+.sheet-panel {
+  background: var(--sheet-bg);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+.sheet-input {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+.sheet-textarea {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.panel-dock {
+  border-color: var(--border-subtle);
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
 }

@@ -66,7 +66,7 @@ export const ROLE_META: Record<
   ui: {
     label: "UI",
     description: "Components, views, presentation",
-    color: "#38bdf8",
+    color: "#34d399",
     bg: "rgba(56,189,248,0.12)",
     border: "rgba(56,189,248,0.45)",
   },
@@ -295,7 +295,7 @@ export function edgeStyle(type: string): {
     case "contains":
       return { stroke: "#64748b", strokeWidth: 1, label: "contains" };
     case "renders":
-      return { stroke: "#38bdf8", strokeWidth: 2, label: "renders" };
+      return { stroke: "#34d399", strokeWidth: 2, label: "renders" };
     default:
       return { stroke: "#475569", strokeWidth: 1.5 };
   }

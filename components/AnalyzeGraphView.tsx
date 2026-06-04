@@ -325,7 +325,7 @@ function AnalyzeGraphInner({
         <MiniMap
           position="bottom-right"
           nodeColor={minimapColor}
-          maskColor="rgba(4, 8, 16, 0.85)"
+          maskColor="var(--minimap-mask)"
           style={{
             marginBottom: chromeOpen ? 220 : 12,
             marginRight: 12,
@@ -373,14 +373,7 @@ function AnalyzeGraphInner({
 
           {chromeOpen && selectedNode && <NodeDetail />}
 
-          <div
-            className="absolute bottom-0 left-0 right-0 z-20 flex flex-col border-t"
-            style={{
-              borderColor: "var(--border-subtle)",
-              background: "var(--bg-glass)",
-              backdropFilter: "blur(12px)",
-            }}
-          >
+          <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col border-t panel-dock">
             <BundleBar
               anchors={bundle.anchors}
               max={bundle.max}

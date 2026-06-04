@@ -114,7 +114,10 @@ export default function ProcessingPage() {
     job && job.total > 0 ? Math.round((job.progress / job.total) * 100) : 0;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
+    <main
+      className="blueprint-grid min-h-screen"
+      style={{ color: "var(--text-primary)" }}
+    >
       <div className="mx-auto max-w-2xl px-6 py-24">
         {error && !job && (
           <div className="mt-8 rounded-lg border border-red-800 bg-red-900/20 p-6 text-center">
@@ -150,7 +153,7 @@ export default function ProcessingPage() {
                           isComplete
                             ? "bg-emerald-600 border-emerald-600 text-white"
                             : isActive && !isError
-                              ? "bg-blue-600 border-blue-600 text-white animate-pulse"
+                              ? "border-[var(--accent)] bg-[var(--accent)] text-white animate-pulse"
                               : isFailed || (isError && isActive)
                                 ? "bg-red-600 border-red-600 text-white"
                                 : "border-gray-700 text-gray-600"
@@ -196,8 +199,11 @@ export default function ProcessingPage() {
                 </div>
                 <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-blue-500 transition-all duration-500"
-                    style={{ width: `${progressPct}%` }}
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      background: "var(--accent)",
+                      width: `${progressPct}%`,
+                    }}
                   />
                 </div>
               </div>
@@ -226,7 +232,7 @@ export default function ProcessingPage() {
                 </p>
                 <button
                   onClick={() => router.push(`/analyze/${job.repo.id}`)}
-                  className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-500 transition-colors"
+                  className="btn-blueprint-primary px-6 py-3"
                 >
                   View Code Map
                 </button>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 function analyzeRepoId(pathname: string): string | null {
   const m = pathname.match(/^\/analyze\/([^/]+)/);
@@ -75,20 +76,16 @@ export default function AppHeader() {
         <span
           className="hidden sm:inline text-[9px] font-mono px-2 py-0.5 rounded border"
           style={{
-            color: "var(--lab-accent)",
-            borderColor: "rgba(45, 212, 191, 0.35)",
-            background: "rgba(45, 212, 191, 0.08)",
+            color: "var(--accent)",
+            borderColor: "var(--border-default)",
+            background: "var(--accent-dim)",
           }}
         >
           ⌬ Lab · L
         </span>
       )}
-      <span
-        className="hidden md:inline text-[9px] font-mono uppercase tracking-widest"
-        style={{ color: "var(--text-muted)" }}
-      >
-        Blueprint
-      </span>
+
+      <ThemeToggle />
 
       <a
         href="https://github.com/Dmallick01/codemap"

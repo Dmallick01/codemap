@@ -40,7 +40,8 @@ function LinkList({
             <button
               type="button"
               onClick={() => onJumpTo(item.id)}
-              className="text-left w-full text-[10px] font-mono text-blue-400/90 hover:text-blue-300 truncate"
+              className="text-left w-full text-[10px] font-mono truncate"
+              style={{ color: "var(--accent)" }}
               title={item.path}
             >
               {item.path.split("/").pop()}
@@ -86,7 +87,13 @@ export default function SpecimenPanel({
   const fname = data.path.split("/").pop() ?? data.path;
 
   return (
-    <div className="flex-none border-t border-gray-800 bg-gray-950 z-30">
+    <div
+      className="flex-none border-t z-30"
+      style={{
+        borderColor: "var(--border-subtle)",
+        background: "var(--bg-glass)",
+      }}
+    >
       <div className="px-4 pt-3 pb-2 border-b border-gray-800/80">
         <div className="flex items-center justify-between gap-2 mb-2">
           <p className="text-[9px] uppercase tracking-widest text-violet-400/90 font-semibold">

@@ -165,7 +165,7 @@ export default function NodeDetail() {
   return (
     <>
       {/* Mobile: bottom sheet overlay */}
-      <div className="sm:hidden absolute bottom-0 left-0 right-0 max-h-[60vh] flex flex-col bg-gray-950/95 backdrop-blur-md border-t border-gray-800 z-10 shadow-2xl rounded-t-xl">
+      <div className="sm:hidden absolute bottom-0 left-0 right-0 max-h-[60vh] flex flex-col panel-dock z-10 shadow-2xl rounded-t-xl border-t">
         {/* Drag handle */}
         <div className="flex-none flex justify-center pt-2 pb-1">
           <div className="w-8 h-1 rounded-full bg-gray-700" />
@@ -174,7 +174,7 @@ export default function NodeDetail() {
       </div>
 
       {/* Desktop: right-side panel */}
-      <div className="hidden sm:flex absolute right-0 top-0 h-full w-72 max-w-[calc(100vw-2rem)] flex-col bg-gray-950/95 backdrop-blur-md border-l border-gray-800 z-10 shadow-2xl">
+      <div className="hidden sm:flex absolute right-0 top-0 h-full w-72 max-w-[calc(100vw-2rem)] flex-col panel-dock border-l z-10 shadow-2xl">
         <PanelContent selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
       </div>
     </>

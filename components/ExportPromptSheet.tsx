@@ -199,11 +199,11 @@ export default function ExportPromptSheet({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/70"
+        className="absolute inset-0 sheet-overlay"
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="relative w-full sm:max-w-3xl max-h-[90vh] flex flex-col bg-gray-950 border border-gray-800 rounded-t-xl sm:rounded-xl shadow-2xl">
+      <div className="relative w-full sm:max-w-3xl max-h-[90vh] flex flex-col sheet-panel rounded-t-xl sm:rounded-xl shadow-2xl">
         <div className="flex-none px-4 py-3 border-b border-gray-800 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2

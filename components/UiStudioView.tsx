@@ -241,7 +241,7 @@ function UiStudioInner({
         <MiniMap
           position="bottom-right"
           nodeColor={() => "var(--role-ui)"}
-          maskColor="rgba(4, 8, 16, 0.85)"
+          maskColor="var(--minimap-mask)"
           style={{ marginBottom: chromeOpen ? 72 : 12, marginRight: 12 }}
         />
         <Background
@@ -292,14 +292,7 @@ function UiStudioInner({
       />
 
       {chromeOpen && (
-        <div
-          className="absolute bottom-0 left-0 right-0 z-20 flex flex-wrap items-center gap-2 px-4 py-2 border-t"
-          style={{
-            borderColor: "var(--border-subtle)",
-            background: "var(--bg-glass)",
-            backdropFilter: "blur(12px)",
-          }}
-        >
+        <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-wrap items-center gap-2 px-4 py-2 border-t panel-dock">
           <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
             {uiFiles.length} UI files · {layoutEdges.length} connections
           </span>
