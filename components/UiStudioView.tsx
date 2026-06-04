@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useState, useEffect } from "react";
+import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   ReactFlow,
@@ -32,7 +32,10 @@ import {
 import type { ArchRole } from "@/lib/graph/semantic";
 import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
 import { useMapSpacing } from "@/hooks/useMapSpacing";
-import { usePromptDockLayout } from "@/hooks/usePromptDockLayout";
+import {
+  useMeasuredMapDock,
+  UI_CHROME_DOCK_FALLBACK_PX,
+} from "@/hooks/useMeasuredMapDock";
 import MapSpacingControls from "@/components/MapSpacingControls";
 import { edgeStyle, edgeLabelPresentation } from "@/lib/graph/semantic";
 import type { FileNodeData } from "@/lib/store/graph";
@@ -94,6 +97,8 @@ function UiStudioInner({
   const [labOpen, setLabOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
   const [promptExpanded, setPromptExpanded] = useState(false);
+  const promptDockRef = useRef<HTMLDivElement>(null);
+  const chromeDockRef = useRef<HTMLDivElement>(null);
 
   const focusPromptInput = useCallback(() => {
     setPromptExpanded(true);
@@ -239,7 +244,11 @@ function UiStudioInner({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [focusPromptInput]);
 
-  const dock = usePromptDockLayout(promptExpanded, chromeOpen, 48);
+  const dock = useMeasuredMapDock(promptDockRef, chromeDockRef, {
+    chromeOpen,
+    promptExpanded,
+    chromeFallbackPx: UI_CHROME_DOCK_FALLBACK_PX,
+  });
 
   if (!uiFiles.length) {
     return (
@@ -258,53 +267,56 @@ function UiStudioInner({
   return (
     <div
       className="map-view-root relative overflow-hidden"
-      style={{ height: "calc(100vh - var(--header-h))" }}
+      style={{
+        height: "calc(100vh - var(--header-h))",
+        ["--map-dock-reserve" as string]: `${dock.reservePx}px`,
+      }}
     >
-      <div className="map-flow-host" style={{ bottom: dock.reservePx }}>
-        <ReactFlow
-          nodes={displayNodes}
-          edges={styledEdges}
-          nodeTypes={nodeTypes}
-          colorMode={colorMode}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
-          onPaneClick={() => {
-            setFocusId(null);
-            setSelectedIds([]);
-          }}
-          minZoom={0.1}
-          maxZoom={1.8}
-          nodesDraggable
-          className="map-canvas-bg"
-          proOptions={{ hideAttribution: true }}
-        >
-          {!chromeOpen && <Controls position="bottom-left" style={{ marginBottom: 8 }} />}
-          <MiniMap
-            position="bottom-right"
-            nodeColor={() => "var(--role-ui)"}
-            maskColor="var(--minimap-mask)"
-            style={{ marginBottom: 8, marginRight: 12 }}
-          />
-          <Background
-            variant={BackgroundVariant.Lines}
-            gap={24}
-            size={1}
-            color="var(--grid-line)"
-          />
-        </ReactFlow>
-      </div>
-
-      <div
-        className="absolute z-20 left-3 pointer-events-none"
-        style={{ bottom: dock.reservePx + 12 }}
+      <ReactFlow
+        nodes={displayNodes}
+        edges={styledEdges}
+        nodeTypes={nodeTypes}
+        colorMode={colorMode}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        onPaneClick={() => {
+          setFocusId(null);
+          setSelectedIds([]);
+        }}
+        minZoom={0.1}
+        maxZoom={1.8}
+        nodesDraggable
+        className="map-canvas-bg"
+        proOptions={{ hideAttribution: true }}
       >
-        <MapSpacingControls
-          scale={spacingScale}
-          onChange={setSpacingScale}
-          onReset={resetSpacing}
+        {!chromeOpen && <Controls position="bottom-left" />}
+        <div
+          className="absolute z-20 left-3 pointer-events-none"
+          style={{ bottom: dock.reservePx + 12 }}
+        >
+          <MapSpacingControls
+            scale={spacingScale}
+            onChange={setSpacingScale}
+            onReset={resetSpacing}
+          />
+        </div>
+        <MiniMap
+          position="bottom-right"
+          nodeColor={() => "var(--role-ui)"}
+          maskColor="var(--minimap-mask)"
+          style={{
+            marginBottom: dock.reservePx + 12,
+            marginRight: 12,
+          }}
         />
-      </div>
+        <Background
+          variant={BackgroundVariant.Lines}
+          gap={24}
+          size={1}
+          color="var(--grid-line)"
+        />
+      </ReactFlow>
 
       <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-3 left-3 z-20 max-w-[260px]" />
 
@@ -386,6 +398,7 @@ function UiStudioInner({
       />
 
       <PromptBuilderPanel
+        ref={promptDockRef}
         repoId={repoId}
         repoName={repoName}
         repoUrl={repoUrl}
@@ -402,7 +415,10 @@ function UiStudioInner({
       />
 
       {chromeOpen && (
-        <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-wrap items-center gap-2 px-4 py-2 border-t panel-dock">
+        <div
+          ref={chromeDockRef}
+          className="absolute bottom-0 left-0 right-0 z-20 flex flex-wrap items-center gap-2 px-4 py-2 border-t panel-dock"
+        >
           <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
             {uiFiles.length} UI files · {layoutEdges.length} connections
           </span>

@@ -2,17 +2,13 @@ import {
   MAP_GROUP_PAD_BOTTOM,
   MAP_GROUP_PAD_X,
   MAP_GROUP_PAD_Y,
+  MAP_DEPTH_STEP_X,
+  MAP_SPACING_BASE,
   MAP_TILE_HEIGHT,
   MAP_TILE_WIDTH,
-  MAP_DEPTH_STEP_X,
-} from "./map-tile-metrics";
+} from "./map-layout-metrics";
 
-/** Base gaps (100% scale) — layout uses resolved values from user scale. */
-export const MAP_SPACING_BASE = {
-  tileRowGap: 14,
-  groupGapY: 22,
-  roleColGap: 36,
-} as const;
+export { MAP_SPACING_BASE } from "./map-layout-metrics";
 
 export type MapSpacingScale = {
   /** File rows inside a folder group */

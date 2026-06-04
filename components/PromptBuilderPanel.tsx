@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { forwardRef, useMemo, useState, useCallback, useEffect } from "react";
 import {
   buildRepoPrompt,
   PROMPT_MODE_META,
@@ -62,17 +62,20 @@ type Props = {
   dockOffsetPx?: number;
 };
 
-export default function PromptBuilderPanel({
-  repoId,
-  repoName,
-  repoUrl,
-  input,
-  expanded,
-  onToggleExpanded,
-  currentFilePath,
-  overview = null,
-  dockOffsetPx = 0,
-}: Props) {
+const PromptBuilderPanel = forwardRef<HTMLDivElement, Props>(function PromptBuilderPanel(
+  {
+    repoId,
+    repoName,
+    repoUrl,
+    input,
+    expanded,
+    onToggleExpanded,
+    currentFilePath,
+    overview = null,
+    dockOffsetPx = 0,
+  },
+  ref,
+) {
   const [userQuestion, setUserQuestion] = useState("");
   const [mode, setMode] = useState<PromptMode>("explain-repo");
   const [elementId, setElementId] = useState<ElementCatalogId>("card-grid");
@@ -232,6 +235,7 @@ export default function PromptBuilderPanel({
 
   return (
     <div
+      ref={ref}
       className={`prompt-builder ${expanded ? "prompt-builder-expanded" : "prompt-builder-collapsed"}`}
       style={{ bottom: dockOffsetPx }}
     >
@@ -509,4 +513,6 @@ export default function PromptBuilderPanel({
       )}
     </div>
   );
-}
+});
+
+export default PromptBuilderPanel;

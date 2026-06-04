@@ -7,7 +7,14 @@ import {
   roleXIndex,
   analyzeFileSemantics,
 } from "./semantic";
-import { MAP_GROUP_PAD_X, MAP_GROUP_PAD_Y, MAP_DEPTH_STEP_X, mapFileNodeStyle } from "./map-tile-metrics";
+import {
+  MAP_GROUP_PAD_X,
+  MAP_GROUP_PAD_Y,
+  MAP_DEPTH_STEP_X,
+  MAP_COLUMN_TOP_INSET_PX,
+  MAP_GROUP_LABEL_OVERHANG_PX,
+  mapFileNodeStyle,
+} from "./map-tile-metrics";
 import {
   DEFAULT_MAP_SPACING_SCALE,
   groupHeightForFileCount,
@@ -151,7 +158,7 @@ export function buildSemanticLayout(
       ...bucket.files.map((f) => depth.get(f.id) ?? 0),
     );
     const baseX = roleColumnX.get(bucket.role) ?? 0;
-    const baseY = roleBandY.get(bucket.role) ?? 0;
+    const baseY = roleBandY.get(bucket.role) ?? MAP_COLUMN_TOP_INSET_PX;
     const groupWidth = groupWidthForDepth(maxDepthInBucket);
     const groupHeight = groupHeightForFileCount(bucket.files.length, spacing);
 
@@ -206,7 +213,13 @@ export function buildSemanticLayout(
       });
     });
 
-    roleBandY.set(bucket.role, baseY + groupHeight + spacing.groupGapY);
+    roleBandY.set(
+      bucket.role,
+      baseY +
+        groupHeight +
+        spacing.groupGapY +
+        MAP_GROUP_LABEL_OVERHANG_PX,
+    );
   }
 
   return { nodes, edges: graphEdges, semantics };

@@ -37,7 +37,10 @@ import type {
 import { useBundleSelection } from "@/hooks/useBundleSelection";
 import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
 import { useMapSpacing } from "@/hooks/useMapSpacing";
-import { usePromptDockLayout } from "@/hooks/usePromptDockLayout";
+import {
+  useMeasuredMapDock,
+  CHROME_DOCK_FALLBACK_PX,
+} from "@/hooks/useMeasuredMapDock";
 import MapSpacingControls from "@/components/MapSpacingControls";
 import GraphLegend from "@/components/GraphLegend";
 import RepoOverviewPanel, {
@@ -145,6 +148,8 @@ function AnalyzeGraphInner({
   const [securityOpen, setSecurityOpen] = useState(false);
   const [promptExpanded, setPromptExpanded] = useState(false);
   const didInitialFit = useRef(false);
+  const promptDockRef = useRef<HTMLDivElement>(null);
+  const chromeDockRef = useRef<HTMLDivElement>(null);
 
   const focusPromptInput = useCallback(() => {
     setPromptExpanded(true);
@@ -361,68 +366,64 @@ function AnalyzeGraphInner({
     [repoName, repoUrl, mapMode, nodes, edges, elementPromptNodeIds],
   );
 
-  const dock = usePromptDockLayout(promptExpanded, chromeOpen);
+  const dock = useMeasuredMapDock(promptDockRef, chromeDockRef, {
+    chromeOpen,
+    promptExpanded,
+    chromeFallbackPx: CHROME_DOCK_FALLBACK_PX,
+  });
 
   return (
     <div
       className="map-view-root relative overflow-hidden"
-      style={{ height: "calc(100vh - var(--header-h))" }}
+      style={{
+        height: "calc(100vh - var(--header-h))",
+        ["--map-dock-reserve" as string]: `${dock.reservePx}px`,
+      }}
     >
-      <div
-        className="map-flow-host"
-        style={{ bottom: dock.reservePx }}
+      <ReactFlow
+        nodes={displayNodes}
+        edges={styledEdges}
+        nodeTypes={nodeTypes}
+        colorMode={colorMode}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
+        minZoom={0.04}
+        maxZoom={2}
+        nodesDraggable
+        nodesConnectable={false}
+        elementsSelectable
+        className="map-canvas-bg"
+        proOptions={{ hideAttribution: true }}
       >
-        <ReactFlow
-          nodes={displayNodes}
-          edges={styledEdges}
-          nodeTypes={nodeTypes}
-          colorMode={colorMode}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
-          onPaneClick={onPaneClick}
-          minZoom={0.04}
-          maxZoom={2}
-          nodesDraggable
-          nodesConnectable={false}
-          elementsSelectable
-          className="map-canvas-bg"
-          proOptions={{ hideAttribution: true }}
+        {!chromeOpen && <Controls position="bottom-left" />}
+        <div
+          className="absolute z-20 pointer-events-none"
+          style={{ left: 12, bottom: dock.reservePx + 12 }}
         >
-          {!chromeOpen && (
-            <Controls
-              position="bottom-left"
-              style={{ marginBottom: 8 }}
-            />
-          )}
-          <MiniMap
-            position="bottom-right"
-            nodeColor={minimapColor}
-            maskColor="var(--minimap-mask)"
-            style={{
-              marginBottom: 8,
-              marginRight: 12,
-            }}
+          <MapSpacingControls
+            scale={spacingScale}
+            onChange={setSpacingScale}
+            onReset={resetSpacing}
           />
-          <Background
-            variant={BackgroundVariant.Lines}
-            gap={24}
-            size={1}
-            color="var(--grid-line)"
-          />
-        </ReactFlow>
-      </div>
-
-      <div
-        className="absolute z-20 pointer-events-none"
-        style={{ left: 12, bottom: dock.reservePx + 12 }}
-      >
-        <MapSpacingControls
-          scale={spacingScale}
-          onChange={setSpacingScale}
-          onReset={resetSpacing}
+        </div>
+        <MiniMap
+          position="bottom-right"
+          nodeColor={minimapColor}
+          maskColor="var(--minimap-mask)"
+          style={{
+            marginBottom: dock.reservePx + 12,
+            marginRight: 12,
+          }}
         />
-      </div>
+        <Background
+          variant={BackgroundVariant.Lines}
+          gap={24}
+          size={1}
+          color="var(--grid-line)"
+        />
+      </ReactFlow>
 
       <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-28 left-3 z-20 max-w-sm" />
 
@@ -465,7 +466,10 @@ function AnalyzeGraphInner({
 
           {chromeOpen && selectedNode && <NodeDetail />}
 
-          <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col border-t panel-dock">
+          <div
+            ref={chromeDockRef}
+            className="absolute bottom-0 left-0 right-0 z-20 flex flex-col border-t panel-dock"
+          >
             <BundleBar
               anchors={bundle.anchors}
               max={bundle.max}
@@ -580,6 +584,7 @@ function AnalyzeGraphInner({
       />
 
       <PromptBuilderPanel
+        ref={promptDockRef}
         repoId={repoId}
         repoName={repoName}
         repoUrl={repoUrl}
