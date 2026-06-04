@@ -46,7 +46,8 @@ function styleEdges(eds: Edge[], focusId: string | null): Edge[] {
       animated: !!connected,
       style: {
         stroke: base.stroke,
-        strokeWidth: connected ? base.strokeWidth + 1 : base.strokeWidth * 0.7,
+        strokeWidth: connected ? base.strokeWidth + 0.5 : base.strokeWidth,
+        opacity: 1,
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,
@@ -81,7 +82,7 @@ function UiStudioInner({
   const [chromeOpen, setChromeOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
-  const [promptExpanded, setPromptExpanded] = useState(true);
+  const [promptExpanded, setPromptExpanded] = useState(false);
 
   const focusPromptInput = useCallback(() => {
     setPromptExpanded(true);
@@ -149,28 +150,16 @@ function UiStudioInner({
     [edges, focusId],
   );
 
-  const highlightIds = useMemo(() => {
-    if (!focusId) return null;
-    const set = new Set<string>([focusId]);
-    for (const e of edges) {
-      if (e.source === focusId) set.add(e.target);
-      if (e.target === focusId) set.add(e.source);
-    }
-    return set;
-  }, [focusId, edges]);
-
   const displayNodes = useMemo(
     () =>
       nodes.map((n) => ({
         ...n,
         style: {
           ...n.style,
-          opacity:
-            highlightIds && !highlightIds.has(n.id) ? 0.22 : 1,
-          transition: "opacity 0.2s ease",
+          opacity: 1,
         },
       })),
-    [nodes, highlightIds],
+    [nodes],
   );
 
   const onNodeClick = useCallback((ev: React.MouseEvent, node: Node) => {
@@ -276,7 +265,7 @@ function UiStudioInner({
           nodeColor={() => "var(--role-ui)"}
           maskColor="var(--minimap-mask)"
           style={{
-            marginBottom: (chromeOpen ? 72 : 0) + (promptExpanded ? 280 : 88) + 12,
+            marginBottom: (chromeOpen ? 72 : 0) + (promptExpanded ? 240 : 56) + 12,
             marginRight: 12,
           }}
         />

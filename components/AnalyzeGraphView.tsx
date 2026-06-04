@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useCallback, useState } from "react";
+import { useEffect, useMemo, useCallback, useState, useRef } from "react";
 import MapImportExport from "@/components/MapImportExport";
 import {
   ReactFlow,
@@ -60,12 +60,14 @@ function styleEdges(eds: Edge[], focusId: string | null): Edge[] {
     return {
       ...e,
       animated: !!connected,
-      style: connected
-        ? { stroke: base.stroke, strokeWidth: base.strokeWidth + 1 }
-        : { stroke: base.stroke, strokeWidth: base.strokeWidth * 0.55 },
+      style: {
+        stroke: base.stroke,
+        strokeWidth: connected ? base.strokeWidth + 0.5 : base.strokeWidth,
+        opacity: 1,
+      },
       markerEnd: {
         type: MarkerType.ArrowClosed,
-        color: connected ? base.stroke : `${base.stroke}55`,
+        color: base.stroke,
       },
     };
   });
@@ -117,7 +119,8 @@ function AnalyzeGraphInner({
   const [chromeOpen, setChromeOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
-  const [promptExpanded, setPromptExpanded] = useState(true);
+  const [promptExpanded, setPromptExpanded] = useState(false);
+  const didInitialFit = useRef(false);
 
   const focusPromptInput = useCallback(() => {
     setPromptExpanded(true);
@@ -178,31 +181,12 @@ function AnalyzeGraphInner({
     };
   }, [bundle.anchors, fileNodesOnly, edges, repoName, repoUrl, mapMode]);
 
-  const highlightIds = useMemo(() => {
-    const set = new Set<string>();
-    if (focusId) set.add(focusId);
-    for (const id of bundle.selectedIds) set.add(id);
-    const anchor = focusId ?? bundle.selectedIds[0];
-    if (anchor) {
-      for (const e of edges) {
-        if (e.source === anchor) set.add(e.target);
-        if (e.target === anchor) set.add(e.source);
-      }
-    }
-    if (set.size === 0) return null;
-    return set;
-  }, [focusId, bundle.selectedIds, edges]);
-
   const displayNodes = useMemo(
     () =>
       nodes.map((n) => {
         const isFocus =
           n.type === "fileNode" &&
           (n.id === explorer.currentNode?.id || n.id === selectedNode?.id);
-        const dimmed =
-          highlightIds &&
-          n.type === "fileNode" &&
-          !highlightIds.has(n.id);
         const bundleSelected =
           n.type === "fileNode" && bundle.isSelected(n.id);
         return {
@@ -214,8 +198,7 @@ function AnalyzeGraphInner({
               : n.data,
           style: {
             ...n.style,
-            opacity: dimmed ? 0.18 : 1,
-            transition: "opacity 0.2s ease",
+            opacity: 1,
           },
         };
       }),
@@ -223,7 +206,6 @@ function AnalyzeGraphInner({
       nodes,
       explorer.currentNode?.id,
       selectedNode?.id,
-      highlightIds,
       bundle,
     ],
   );
@@ -234,17 +216,18 @@ function AnalyzeGraphInner({
   );
 
   useEffect(() => {
-    if (!explorer.currentNode) return;
-    const t = setTimeout(() => {
-      fitView({
-        nodes: [{ id: explorer.currentNode!.id }],
-        padding: 0.5,
-        duration: 280,
-        maxZoom: 1.2,
-      });
-    }, 50);
+    didInitialFit.current = false;
+  }, [repoId]);
+
+  useEffect(() => {
+    if (!fileNodesOnly.length || didInitialFit.current) return;
+    didInitialFit.current = true;
+    const t = setTimeout(
+      () => fitView({ padding: 0.14, duration: 450, maxZoom: 1.05 }),
+      200,
+    );
     return () => clearTimeout(t);
-  }, [explorer.currentNode?.id, fitView]);
+  }, [fileNodesOnly.length, fitView, repoId]);
 
   const toggleChrome = useCallback(() => {
     setChromeOpen((v) => !v);
@@ -347,7 +330,7 @@ function AnalyzeGraphInner({
 
   const promptDockBottom = useMemo(() => {
     const chromeH = chromeOpen ? 220 : 0;
-    const promptH = promptExpanded ? 280 : 88;
+    const promptH = promptExpanded ? 240 : 56;
     return chromeH + promptH + 12;
   }, [chromeOpen, promptExpanded]);
 
@@ -551,6 +534,7 @@ function AnalyzeGraphInner({
         expanded={promptExpanded}
         onToggleExpanded={() => setPromptExpanded((v) => !v)}
         currentFilePath={selectedFilePath}
+        overview={overview}
         dockOffsetPx={chromeOpen ? 220 : 0}
       />
 
