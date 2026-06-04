@@ -3,9 +3,21 @@ import {
   type ArchRole,
   type FileSemantics,
   ROLE_META,
+  ROLE_ORDER,
   roleXIndex,
   analyzeFileSemantics,
 } from "./semantic";
+import {
+  MAP_TILE_ROW_STRIDE,
+  MAP_GROUP_PAD_X,
+  MAP_GROUP_PAD_Y,
+  MAP_GROUP_GAP_Y,
+  MAP_ROLE_COL_GAP,
+  MAP_DEPTH_STEP_X,
+  groupHeightForFileCount,
+  groupWidthForDepth,
+  mapFileNodeStyle,
+} from "./map-tile-metrics";
 
 export type LayoutFileInput = {
   id: string;
@@ -15,18 +27,6 @@ export type LayoutFileInput = {
   imports?: string[];
   modules?: unknown[];
 };
-
-import {
-  MAP_TILE_ROW_STRIDE,
-  MAP_GROUP_PAD_X,
-  MAP_GROUP_PAD_Y,
-  MAP_GROUP_GAP_Y,
-  MAP_ROLE_STEP_X,
-  MAP_DEPTH_STEP_X,
-  groupHeightForFileCount,
-  groupWidthForDepth,
-  mapFileNodeStyle,
-} from "./map-tile-metrics";
 
 export type GroupNodeData = {
   label: string;
@@ -44,8 +44,17 @@ export type LayoutResult = {
   semantics: Map<string, FileSemantics>;
 };
 
+type EnrichedFile = LayoutFileInput & { sem: FileSemantics };
+
+type Bucket = {
+  groupKey: string;
+  groupLabel: string;
+  role: ArchRole;
+  files: EnrichedFile[];
+};
+
 /**
- * Spread the repo on X (architectural role + dependency depth) and Y (folder groups).
+ * Spread the repo on X (role columns, width = content) and Y (folder groups stacked per role).
  */
 export function buildSemanticLayout(
   files: LayoutFileInput[],
@@ -63,7 +72,6 @@ export function buildSemanticLayout(
     graphEdges,
   );
 
-  type Bucket = { groupKey: string; groupLabel: string; role: ArchRole; files: typeof enriched };
   const buckets = new Map<string, Bucket>();
 
   for (const file of enriched) {
@@ -85,6 +93,30 @@ export function buildSemanticLayout(
     return a.groupLabel.localeCompare(b.groupLabel);
   });
 
+  /** Per-role column X and max width (no shifting whole groups by import depth). */
+  const roleColumnX = new Map<ArchRole, number>();
+  const roleMaxWidth = new Map<ArchRole, number>();
+
+  for (const bucket of sortedBuckets) {
+    const maxDepth = Math.max(
+      0,
+      ...bucket.files.map((f) => depth.get(f.id) ?? 0),
+    );
+    const w = groupWidthForDepth(maxDepth);
+    roleMaxWidth.set(
+      bucket.role,
+      Math.max(roleMaxWidth.get(bucket.role) ?? 0, w),
+    );
+  }
+
+  let columnX = 0;
+  for (const role of ROLE_ORDER) {
+    const w = roleMaxWidth.get(role);
+    if (!w) continue;
+    roleColumnX.set(role, columnX);
+    columnX += w + MAP_ROLE_COL_GAP;
+  }
+
   const nodes: Node[] = [];
   const roleBandY = new Map<ArchRole, number>();
 
@@ -98,10 +130,7 @@ export function buildSemanticLayout(
       0,
       ...bucket.files.map((f) => depth.get(f.id) ?? 0),
     );
-    const baseX =
-      roleXIndex(bucket.role) * MAP_ROLE_STEP_X +
-      maxDepthInBucket * MAP_DEPTH_STEP_X;
-
+    const baseX = roleColumnX.get(bucket.role) ?? 0;
     const baseY = roleBandY.get(bucket.role) ?? 0;
     const groupWidth = groupWidthForDepth(maxDepthInBucket);
     const groupHeight = groupHeightForFileCount(bucket.files.length);

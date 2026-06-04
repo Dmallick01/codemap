@@ -226,7 +226,7 @@ pre,
   width: 300px;
   height: 132px;
   box-sizing: border-box;
-  padding: 0.65rem 0.85rem;
+  padding: 0.5rem 0.75rem;
   background: var(--map-node-bg) !important;
   backdrop-filter: blur(var(--map-node-blur)) saturate(1.5);
   -webkit-backdrop-filter: blur(var(--map-node-blur)) saturate(1.5);

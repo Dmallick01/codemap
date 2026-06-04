@@ -2,17 +2,10 @@ import type { Node, Edge } from "@xyflow/react";
 import type { FileNodeData } from "@/lib/store/graph";
 import { ROLE_META, type ArchRole } from "@/lib/graph/semantic";
 import { uiStudioCategory } from "@/lib/graph/path-heuristics";
-
 import { MAP_TILE_ROW_STRIDE, mapFileNodeStyle } from "./map-tile-metrics";
 
-const COL = {
-  entry: 0,
-  routing: 320,
-  component: 680,
-  hook: 1040,
-  style: 1280,
-  other: 920,
-};
+const COL_GAP = 20;
+const COL_START_Y = 32;
 
 export type UiLayoutInput = {
   id: string;
@@ -26,7 +19,7 @@ export type UiLayoutInput = {
 };
 
 /**
- * Dedicated UI Studio layout: columns by screen / layout / component / styles.
+ * UI Studio: columns sized to tile width + tight vertical stacking.
  */
 export function buildUiStudioLayout(
   files: UiLayoutInput[],
@@ -39,8 +32,7 @@ export function buildUiStudioLayout(
 
   const buckets = new Map<string, UiLayoutInput[]>();
   for (const f of uiFiles) {
-    const cat = uiStudioCategory(f.path);
-    const key = cat;
+    const key = uiStudioCategory(f.path);
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key)!.push(f);
   }
@@ -49,18 +41,20 @@ export function buildUiStudioLayout(
   const nodes: Node[] = [];
   const ids = new Set(uiFiles.map((f) => f.id));
 
+  let columnX = 0;
   for (const key of order) {
     const list = (buckets.get(key) ?? []).sort((a, b) =>
       a.path.localeCompare(b.path),
     );
-    const x = COL[key];
+    if (!list.length) continue;
+
     list.forEach((file, i) => {
       const role = (file.role as ArchRole) ?? "ui";
       const meta = ROLE_META[role] ?? ROLE_META.ui;
       nodes.push({
         id: file.id,
         type: "fileNode",
-        position: { x, y: 40 + i * MAP_TILE_ROW_STRIDE },
+        position: { x: columnX, y: COL_START_Y + i * MAP_TILE_ROW_STRIDE },
         data: {
           path: file.path,
           language: file.language ?? undefined,
@@ -74,6 +68,8 @@ export function buildUiStudioLayout(
         style: { ...mapFileNodeStyle },
       });
     });
+
+    columnX += mapFileNodeStyle.width + COL_GAP;
   }
 
   const edges = graphEdges.filter(
@@ -88,7 +84,6 @@ export function filterUiStudioFiles<T extends { path: string; role?: string }>(
 ): T[] {
   return files.filter((f) => {
     const cat = uiStudioCategory(f.path);
-    if (cat !== "other") return true;
-    return f.role === "ui" || f.role === "entry" || f.role === "routing";
+    return cat !== "other" || f.role === "ui" || f.role === "entry";
   });
 }

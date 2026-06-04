@@ -33,7 +33,7 @@ export type FileSemantics = {
   purpose: string;
 };
 
-const ROLE_ORDER: ArchRole[] = [
+export const ROLE_ORDER: ArchRole[] = [
   "entry",
   "routing",
   "ui",
