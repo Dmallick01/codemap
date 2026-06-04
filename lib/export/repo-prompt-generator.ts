@@ -21,6 +21,8 @@ export type RepoPromptGeneratorInput = RepoPromptMapContext & {
   customSystem?: string;
   explainDepth?: ExplainDepth;
   explainAudience?: string;
+  /** Natural-language question from the user (shown at top of exported prompt). */
+  userQuestion?: string;
 };
 
 export const PROMPT_MODE_META: Record<
@@ -44,6 +46,12 @@ export const PROMPT_MODE_META: Record<
   },
 };
 
+function wrapWithUserQuestion(prompt: string, userQuestion?: string): string {
+  const q = userQuestion?.trim();
+  if (!q) return prompt;
+  return `## What I asked\n\n> ${q.replace(/\n/g, "\n> ")}\n\n---\n\n${prompt}`;
+}
+
 export function buildRepoPrompt(ctx: RepoPromptGeneratorInput): string {
   const base = {
     repoName: ctx.repoName,
@@ -60,28 +68,37 @@ export function buildRepoPrompt(ctx: RepoPromptGeneratorInput): string {
 
   switch (ctx.mode) {
     case "build-ui":
-      return buildElementBuildPrompt({
-        ...base,
-        elementId: ctx.elementId ?? "card-grid",
-        customElement: ctx.customElement,
-      } satisfies ElementBuildPromptInput);
+      return wrapWithUserQuestion(
+        buildElementBuildPrompt({
+          ...base,
+          elementId: ctx.elementId ?? "card-grid",
+          customElement: ctx.customElement,
+        } satisfies ElementBuildPromptInput),
+        ctx.userQuestion,
+      );
     case "build-system":
-      return buildSystemBuildPrompt({
-        ...base,
-        systemId: ctx.systemId ?? "domain-module",
-        customSystem: ctx.customSystem,
-      } satisfies SystemBuildPromptInput);
+      return wrapWithUserQuestion(
+        buildSystemBuildPrompt({
+          ...base,
+          systemId: ctx.systemId ?? "domain-module",
+          customSystem: ctx.customSystem,
+        } satisfies SystemBuildPromptInput),
+        ctx.userQuestion,
+      );
     case "explain-repo":
-      return buildExplainRepoPrompt({
-        ...base,
-        depth: ctx.explainDepth ?? "overview",
-        audience: ctx.explainAudience,
-      } satisfies ExplainRepoPromptInput);
+      return wrapWithUserQuestion(
+        buildExplainRepoPrompt({
+          ...base,
+          depth: ctx.explainDepth ?? "overview",
+          audience: ctx.explainAudience,
+        } satisfies ExplainRepoPromptInput),
+        ctx.userQuestion,
+      );
     default:
-      return buildExplainRepoPrompt({
-        ...base,
-        depth: "overview",
-      });
+      return wrapWithUserQuestion(
+        buildExplainRepoPrompt({ ...base, depth: "overview" }),
+        ctx.userQuestion,
+      );
   }
 }
 

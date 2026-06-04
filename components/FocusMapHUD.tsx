@@ -40,10 +40,10 @@ export default function FocusMapHUD({
       <div className="absolute top-3 left-3 z-20 flex flex-col gap-2 max-w-[min(320px,50vw)] pointer-events-none">
         <div className="panel-blueprint px-3 py-2 pointer-events-auto">
           <p className="panel-label mb-0.5">Active map</p>
-          <p className="text-xs font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+          <p className="text-[14px] font-semibold truncate" style={{ color: "var(--text-primary)" }}>
             {repoName}
           </p>
-          <p className="text-[10px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>
+          <p className="text-[13px] font-mono mt-1" style={{ color: "var(--text-muted)" }}>
             {fileCount} nodes · {edgeCount} edges
           </p>
         </div>
@@ -54,11 +54,11 @@ export default function FocusMapHUD({
           ←
         </button>
         <div className="panel-blueprint px-3 py-1.5 text-center min-w-[120px]">
-          <p className="text-[10px] font-mono" style={{ color: "var(--accent)" }}>
+          <p className="text-[13px] font-mono font-semibold" style={{ color: "var(--accent)" }}>
             {tourIndex + 1} / {tourTotal}
           </p>
           <p
-            className="text-[9px] truncate max-w-[200px] font-mono"
+            className="text-[12px] truncate max-w-[200px] font-mono"
             style={{ color: "var(--text-muted)" }}
             title={currentPath}
           >
@@ -86,9 +86,9 @@ export default function FocusMapHUD({
             type="button"
             onClick={onBuildElement}
             className="btn-blueprint-primary"
-            title="Repo prompt generator (G)"
+            title="Focus prompt bar (G)"
           >
-            Prompts
+            Ask repo
           </button>
         )}
         {onSecurity && (

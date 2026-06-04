@@ -29,8 +29,7 @@ import FocusMapHUD from "@/components/FocusMapHUD";
 import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
 import SecurityExportSheet from "@/components/SecurityExportSheet";
-import ElementPromptGeneratorSheet from "@/components/ElementPromptGeneratorSheet";
-import MapQuickStartBanner from "@/components/MapQuickStartBanner";
+import PromptBuilderPanel from "@/components/PromptBuilderPanel";
 import type {
   RepurposeExportContext,
   BundleExportContext,
@@ -116,7 +115,15 @@ function AnalyzeGraphInner({
   const [chromeOpen, setChromeOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
-  const [elementPromptOpen, setElementPromptOpen] = useState(false);
+  const [promptExpanded, setPromptExpanded] = useState(true);
+
+  const focusPromptInput = useCallback(() => {
+    setPromptExpanded(true);
+    requestAnimationFrame(() => {
+      const el = document.getElementById("prompt-ask");
+      if (el instanceof HTMLInputElement) el.focus();
+    });
+  }, []);
 
   const fileNodesOnly = useMemo(
     () => nodes.filter((n) => n.type === "fileNode"),
@@ -278,7 +285,7 @@ function AnalyzeGraphInner({
           break;
         case "g":
         case "G":
-          setElementPromptOpen(true);
+          focusPromptInput();
           break;
         case "s":
         case "S":
@@ -290,7 +297,7 @@ function AnalyzeGraphInner({
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [explorer, setSelectedNode, toggleChrome]);
+  }, [explorer, setSelectedNode, toggleChrome, focusPromptInput]);
 
   const openExport = useCallback(() => setExportOpen(true), []);
 
@@ -336,7 +343,11 @@ function AnalyzeGraphInner({
     [repoName, repoUrl, mapMode, nodes, edges, elementPromptNodeIds],
   );
 
-  const elementPromptInput = securityInput;
+  const promptDockBottom = useMemo(() => {
+    const chromeH = chromeOpen ? 220 : 0;
+    const promptH = promptExpanded ? 280 : 88;
+    return chromeH + promptH + 12;
+  }, [chromeOpen, promptExpanded]);
 
   return (
     <div
@@ -365,7 +376,7 @@ function AnalyzeGraphInner({
           nodeColor={minimapColor}
           maskColor="var(--minimap-mask)"
           style={{
-            marginBottom: chromeOpen ? 220 : 12,
+            marginBottom: promptDockBottom,
             marginRight: 12,
           }}
         />
@@ -378,8 +389,6 @@ function AnalyzeGraphInner({
       </ReactFlow>
 
       <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-28 left-3 z-20 max-w-sm" />
-
-      <MapQuickStartBanner repoId={repoId} variant="map" />
 
       <FocusMapHUD
         repoName={repoName}
@@ -395,7 +404,7 @@ function AnalyzeGraphInner({
         onExport={openExport}
         onOpenLab={repoUrl ? () => setLabOpen(true) : undefined}
         onSecurity={() => setSecurityOpen(true)}
-        onBuildElement={() => setElementPromptOpen(true)}
+        onBuildElement={focusPromptInput}
         bundleCount={bundle.count}
       />
 
@@ -436,7 +445,7 @@ function AnalyzeGraphInner({
               neighbors={explorer.neighbors}
               onJumpTo={explorer.focusIdByNodeId}
               onExportPrompt={openExport}
-              onBuildElement={() => setElementPromptOpen(true)}
+              onBuildElement={focusPromptInput}
               bundleCount={bundle.count}
               inBundle={
                 explorer.currentNode
@@ -465,11 +474,11 @@ function AnalyzeGraphInner({
               <div className="flex-1" />
               <button
                 type="button"
-                onClick={() => setElementPromptOpen(true)}
+                onClick={focusPromptInput}
                 className="btn-blueprint-primary"
-                title="Repo prompt generator (G)"
+                title="Focus prompt bar (G)"
               >
-                Prompts
+                Ask repo
               </button>
               <button
                 type="button"
@@ -531,12 +540,15 @@ function AnalyzeGraphInner({
         input={securityInput}
       />
 
-      <ElementPromptGeneratorSheet
-        open={elementPromptOpen}
-        onClose={() => setElementPromptOpen(false)}
+      <PromptBuilderPanel
         repoId={repoId}
         repoName={repoName}
-        input={elementPromptInput}
+        repoUrl={repoUrl}
+        input={securityInput}
+        expanded={promptExpanded}
+        onToggleExpanded={() => setPromptExpanded((v) => !v)}
+        currentFilePath={selectedFilePath}
+        dockOffsetPx={chromeOpen ? 220 : 0}
       />
 
       <ExportPromptSheet

@@ -21,8 +21,7 @@ import "@xyflow/react/dist/style.css";
 import FileNode from "@/components/nodes/FileNode";
 import UiDesignExportSheet from "@/components/UiDesignExportSheet";
 import SecurityExportSheet from "@/components/SecurityExportSheet";
-import ElementPromptGeneratorSheet from "@/components/ElementPromptGeneratorSheet";
-import MapQuickStartBanner from "@/components/MapQuickStartBanner";
+import PromptBuilderPanel from "@/components/PromptBuilderPanel";
 import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
 import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import {
@@ -80,7 +79,15 @@ function UiStudioInner({
   const [chromeOpen, setChromeOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
-  const [elementPromptOpen, setElementPromptOpen] = useState(false);
+  const [promptExpanded, setPromptExpanded] = useState(true);
+
+  const focusPromptInput = useCallback(() => {
+    setPromptExpanded(true);
+    requestAnimationFrame(() => {
+      const el = document.getElementById("prompt-ask");
+      if (el instanceof HTMLInputElement) el.focus();
+    });
+  }, []);
 
   const layoutInputs: LayoutFileInput[] = useMemo(() => {
     return rawNodes
@@ -211,19 +218,18 @@ function UiStudioInner({
       }
       if (e.key === "l" || e.key === "L") setLabOpen((v) => !v);
       if (e.key === "e" || e.key === "E") setExportOpen(true);
-      if (e.key === "g" || e.key === "G") setElementPromptOpen(true);
+      if (e.key === "g" || e.key === "G") focusPromptInput();
       if (e.key === "s" || e.key === "S") setSecurityOpen(true);
       if (e.key === "Escape") {
         setChromeOpen(false);
         setLabOpen(false);
         setExportOpen(false);
-        setElementPromptOpen(false);
         setSecurityOpen(false);
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [focusPromptInput]);
 
   if (!uiFiles.length) {
     return (
@@ -266,7 +272,10 @@ function UiStudioInner({
           position="bottom-right"
           nodeColor={() => "var(--role-ui)"}
           maskColor="var(--minimap-mask)"
-          style={{ marginBottom: chromeOpen ? 72 : 12, marginRight: 12 }}
+          style={{
+            marginBottom: (chromeOpen ? 72 : 0) + (promptExpanded ? 280 : 88) + 12,
+            marginRight: 12,
+          }}
         />
         <Background
           variant={BackgroundVariant.Lines}
@@ -278,28 +287,26 @@ function UiStudioInner({
 
       <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-3 left-3 z-20 max-w-[260px]" />
 
-      <MapQuickStartBanner repoId={repoId} variant="ui" />
-
       <div
-        className={`absolute z-20 panel-blueprint px-3 py-2 text-[10px] max-w-[220px] pointer-events-auto ${repoUrl ? "top-3 left-3" : "top-28 left-3"}`}
+        className={`absolute z-20 panel-blueprint px-3 py-2 max-w-[240px] pointer-events-auto ${repoUrl ? "top-14 left-3" : "top-28 left-3"}`}
       >
         <p className="panel-label mb-1">UI Studio</p>
-        <p style={{ color: "var(--text-secondary)" }}>
+        <p className="text-readable-secondary text-[13px]">
           Entry → Layouts → Components → Hooks → Styles
         </p>
-        <p className="mt-1 font-mono" style={{ color: "var(--text-muted)" }}>
-          {uiFiles.length} files · G prompts · E export · S security · L lab
+        <p className="mt-1 text-readable-muted font-mono text-[12px]">
+          {uiFiles.length} files · G ask · E export · S security · L lab
         </p>
       </div>
 
       <div className="absolute top-3 right-3 z-20 pointer-events-auto flex flex-wrap gap-2 justify-end max-w-[min(100%,420px)]">
         <button
           type="button"
-          onClick={() => setElementPromptOpen(true)}
+          onClick={focusPromptInput}
           className="btn-blueprint-primary"
-          title="Repo prompt generator (G)"
+          title="Focus prompt bar (G)"
         >
-          Prompts
+          Ask repo
         </button>
         <button
           type="button"
@@ -357,12 +364,20 @@ function UiStudioInner({
         input={securityInput}
       />
 
-      <ElementPromptGeneratorSheet
-        open={elementPromptOpen}
-        onClose={() => setElementPromptOpen(false)}
+      <PromptBuilderPanel
         repoId={repoId}
         repoName={repoName}
+        repoUrl={repoUrl}
         input={exportInput}
+        expanded={promptExpanded}
+        onToggleExpanded={() => setPromptExpanded((v) => !v)}
+        currentFilePath={
+          selectedIds[0]
+            ? (layoutNodes.find((n) => n.id === selectedIds[0])?.data as { path?: string })
+                ?.path ?? null
+            : null
+        }
+        dockOffsetPx={chromeOpen ? 48 : 0}
       />
 
       {chromeOpen && (
