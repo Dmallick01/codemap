@@ -20,6 +20,7 @@ import "@xyflow/react/dist/style.css";
 
 import FileNode from "@/components/nodes/FileNode";
 import UiDesignExportSheet from "@/components/UiDesignExportSheet";
+import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
 import {
   buildUiStudioLayout,
   filterUiStudioFiles,
@@ -73,6 +74,7 @@ function UiStudioInner({
   const [exportOpen, setExportOpen] = useState(false);
   const [focusId, setFocusId] = useState<string | null>(null);
   const [chromeOpen, setChromeOpen] = useState(false);
+  const [labOpen, setLabOpen] = useState(false);
 
   const layoutInputs: LayoutFileInput[] = useMemo(() => {
     return rawNodes
@@ -189,7 +191,11 @@ function UiStudioInner({
       if (e.key === "?" || e.key === "h" || e.key === "H") {
         setChromeOpen((v) => !v);
       }
-      if (e.key === "Escape") setChromeOpen(false);
+      if (e.key === "l" || e.key === "L") setLabOpen((v) => !v);
+      if (e.key === "Escape") {
+        setChromeOpen(false);
+        setLabOpen(false);
+      }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -256,7 +262,12 @@ function UiStudioInner({
         </p>
       </div>
 
-      <div className="absolute top-3 right-3 z-20 pointer-events-auto">
+      <div className="absolute top-3 right-3 z-20 pointer-events-auto flex gap-2">
+        {repoUrl && (
+          <button type="button" onClick={() => setLabOpen(true)} className="btn-blueprint">
+            ⌬ Lab
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setChromeOpen((v) => !v)}
@@ -265,6 +276,20 @@ function UiStudioInner({
           {chromeOpen ? "Hide panels" : "? Panels"}
         </button>
       </div>
+
+      <GitHubLabDrawer
+        open={labOpen}
+        onClose={() => setLabOpen(false)}
+        repoId={repoId}
+        repoUrl={repoUrl}
+        repoName={repoName}
+        selectedPath={
+          selectedIds[0]
+            ? (layoutNodes.find((n) => n.id === selectedIds[0])?.data as { path?: string })
+                ?.path ?? null
+            : null
+        }
+      />
 
       {chromeOpen && (
         <div

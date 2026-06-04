@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MapImportExport from "@/components/MapImportExport";
 import RoleStrip from "@/components/RoleStrip";
+import GitHubLabShowcase from "@/components/GitHubLabShowcase";
 
 const DEMO_REPOS = [
   { label: "Next.js", url: "https://github.com/vercel/next.js" },
@@ -69,7 +70,7 @@ export default function Home() {
           className="w-full max-w-xl mt-10"
         >
           <div
-            className="panel-blueprint p-1 flex flex-col sm:flex-row gap-1"
+            className="panel-blueprint hero-glow-ring p-1 flex flex-col sm:flex-row gap-1"
             style={{ boxShadow: `0 0 40px var(--accent-glow)` }}
           >
             <input
@@ -130,10 +131,13 @@ export default function Home() {
         </form>
 
         <p className="mt-8 text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
-          Press <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>?</kbd> on
-          the map for panels · <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>N</kbd> /{" "}
+          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>?</kbd> panels ·{" "}
+          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>L</kbd> GitHub Lab ·{" "}
+          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>N</kbd> /{" "}
           <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>P</kbd> tour
         </p>
+
+        <GitHubLabShowcase />
       </div>
     </main>
   );

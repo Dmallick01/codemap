@@ -26,6 +26,7 @@ import SpecimenPanel from "@/components/SpecimenPanel";
 import ExportPromptSheet from "@/components/ExportPromptSheet";
 import BundleBar from "@/components/BundleBar";
 import FocusMapHUD from "@/components/FocusMapHUD";
+import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
 import type {
   RepurposeExportContext,
   BundleExportContext,
@@ -109,6 +110,7 @@ function AnalyzeGraphInner({
   const { selectedNode, setSelectedNode } = useGraphStore();
   const [exportOpen, setExportOpen] = useState(false);
   const [chromeOpen, setChromeOpen] = useState(false);
+  const [labOpen, setLabOpen] = useState(false);
 
   const fileNodesOnly = useMemo(
     () => nodes.filter((n) => n.type === "fileNode"),
@@ -264,6 +266,10 @@ function AnalyzeGraphInner({
         case "R":
           explorer.goRandom();
           break;
+        case "l":
+        case "L":
+          setLabOpen((v) => !v);
+          break;
         default:
           break;
       }
@@ -288,6 +294,11 @@ function AnalyzeGraphInner({
   );
 
   const onPaneClick = useCallback(() => setSelectedNode(null), [setSelectedNode]);
+
+  const selectedFilePath =
+    explorer.currentData?.path ??
+    (selectedNode?.data as FileNodeData | undefined)?.path ??
+    null;
 
   return (
     <div
@@ -340,6 +351,7 @@ function AnalyzeGraphInner({
         onPrev={explorer.goPrev}
         onNext={explorer.goNext}
         onExport={bundle.count > 0 ? openExport : undefined}
+        onOpenLab={() => setLabOpen(true)}
         bundleCount={bundle.count}
       />
 
@@ -443,6 +455,15 @@ function AnalyzeGraphInner({
           </div>
         </>
       )}
+
+      <GitHubLabDrawer
+        open={labOpen}
+        onClose={() => setLabOpen(false)}
+        repoId={repoId}
+        repoUrl={repoUrl}
+        repoName={repoName}
+        selectedPath={selectedFilePath}
+      />
 
       <ExportPromptSheet
         open={exportOpen}

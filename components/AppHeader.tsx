@@ -71,11 +71,23 @@ export default function AppHeader() {
 
       <div className="flex-1" />
 
+      {isAnalyze && (
+        <span
+          className="hidden sm:inline text-[9px] font-mono px-2 py-0.5 rounded border"
+          style={{
+            color: "var(--lab-accent)",
+            borderColor: "rgba(45, 212, 191, 0.35)",
+            background: "rgba(45, 212, 191, 0.08)",
+          }}
+        >
+          ⌬ Lab · L
+        </span>
+      )}
       <span
-        className="hidden sm:inline text-[9px] font-mono uppercase tracking-widest"
+        className="hidden md:inline text-[9px] font-mono uppercase tracking-widest"
         style={{ color: "var(--text-muted)" }}
       >
-        Blueprint view
+        Blueprint
       </span>
 
       <a
