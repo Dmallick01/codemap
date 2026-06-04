@@ -1,18 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import MapImportExport from "@/components/MapImportExport";
-
-interface Repo {
-  id: string;
-  name: string;
-  status: string;
-  createdAt: string;
-  url: string | null;
-  latestJobId: string | null;
-}
+import RoleStrip from "@/components/RoleStrip";
 
 const DEMO_REPOS = [
   { label: "Next.js", url: "https://github.com/vercel/next.js" },
@@ -24,21 +15,7 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [repos, setRepos] = useState<Repo[]>([]);
-  const [reposLoading, setReposLoading] = useState(true);
-  const [reposError, setReposError] = useState("");
   const router = useRouter();
-
-  useEffect(() => {
-    fetch("/api/repos")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to load repositories");
-        return r.json();
-      })
-      .then((data) => setRepos(data.repos || []))
-      .catch(() => setReposError("Could not load recent repositories."))
-      .finally(() => setReposLoading(false));
-  }, []);
 
   async function startIngest(targetUrl: string, mode: "lite" | "deep" = "lite") {
     setError("");
@@ -62,206 +39,101 @@ export default function Home() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    await startIngest(url);
-  }
-
-  const statusColor: Record<string, string> = {
-    pending: "text-yellow-400",
-    processing: "text-blue-400",
-    done: "text-emerald-400",
-    error: "text-red-400",
-  };
-
-  function repoHref(repo: Repo): string | null {
-    if (repo.status === "done") return `/analyze/${repo.id}`;
-    if (repo.status === "processing" || repo.status === "pending") {
-      return repo.latestJobId ? `/processing/${repo.latestJobId}` : null;
-    }
-    return null;
-  }
-
   return (
-    <main className="min-h-[calc(100vh-3rem)] bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
-      <div className="mx-auto max-w-2xl px-6 py-16">
-        <div className="text-center mb-10">
-          <h1 className="text-5xl font-bold tracking-tight mb-4">
-            Code<span className="text-blue-400">Map</span>
+    <main
+      className="blueprint-grid min-h-[calc(100vh-var(--header-h))] flex flex-col"
+      style={{ color: "var(--text-primary)" }}
+    >
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+        <div className="w-full max-w-xl text-center mb-8">
+          <p className="panel-label mb-3">Architecture blueprint</p>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3">
+            Map any repository
           </h1>
-          <p className="text-sm text-emerald-400/90 font-medium mb-2">
-            CodeMap Lite — seconds, not minutes
+          <p className="text-sm max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
+            Full-screen graph. Role-colored layers. Export a portable{" "}
+            <code className="font-mono text-[11px]" style={{ color: "var(--text-mono)" }}>
+              .codemap.json
+            </code>{" "}
+            — no per-file database storage.
           </p>
-          <p className="text-lg text-gray-400 max-w-lg mx-auto">
-            Map repos without storing every file—one portable snapshot. Import and
-            export <code className="text-gray-500">.codemap.json</code> to share or
-            reopen maps anytime.
-          </p>
-          <p className="text-sm text-gray-500 max-w-md mx-auto mt-2">
-            Lite maps do not store individual files—only one{" "}
-            <code className="text-gray-400">.codemap.json</code> snapshot.
-          </p>
-          <Link
-            href="/library"
-            className="inline-block mt-3 text-sm text-violet-400/90 hover:text-violet-300 transition-colors"
-          >
-            Open repo library →
-          </Link>
-          <a
-            href="https://github.com/Dmallick01/codemap"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-4 text-sm text-gray-500 hover:text-blue-400 transition-colors"
-          >
-            View source on GitHub →
-          </a>
         </div>
 
-        <form onSubmit={handleSubmit} className="mb-8">
-          <div className="flex flex-col sm:flex-row gap-3">
+        <RoleStrip />
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            startIngest(url);
+          }}
+          className="w-full max-w-xl mt-10"
+        >
+          <div
+            className="panel-blueprint p-1 flex flex-col sm:flex-row gap-1"
+            style={{ boxShadow: `0 0 40px var(--accent-glow)` }}
+          >
             <input
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://github.com/owner/repo"
-              className="flex-1 rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+              placeholder="github.com/owner/repo"
+              className="flex-1 bg-transparent px-4 py-3 text-sm font-mono outline-none"
+              style={{ color: "var(--text-primary)" }}
               required
               disabled={loading}
             />
             <button
               type="submit"
               disabled={loading || !url.trim()}
-              className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
+              className="btn-blueprint-primary shrink-0 m-1 px-6 py-3 disabled:opacity-40"
             >
-              {loading ? "Starting…" : "Map repo"}
+              {loading ? "Mapping…" : "Open map"}
             </button>
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <MapImportExport variant="import" />
-            <span className="text-xs text-gray-600">or map from GitHub ↓</span>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
-            <span>Lite: snapshot only (no per-file DB)</span>
-            <button
-              type="button"
-              disabled={loading || !url.trim()}
-              onClick={() => startIngest(url, "deep")}
-              className="text-gray-400 hover:text-gray-200 underline disabled:opacity-50"
-            >
-              Deep (stores parsed files — legacy)
-            </button>
-          </div>
-          {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
-        </form>
 
-        <div className="mb-10">
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-            Try a public repo
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <MapImportExport variant="import" />
+            <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+              or
+            </span>
             {DEMO_REPOS.map((d) => (
               <button
                 key={d.url}
                 type="button"
                 disabled={loading}
-                onClick={() => {
-                  setUrl(d.url);
-                  startIngest(d.url);
-                }}
-                className="text-xs px-3 py-1.5 rounded-full border border-gray-700 text-gray-300 hover:border-blue-500/50 hover:text-blue-300 transition-colors disabled:opacity-50"
+                onClick={() => startIngest(d.url)}
+                className="btn-blueprint"
               >
                 {d.label}
               </button>
             ))}
           </div>
-        </div>
 
-        <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5 mb-10 text-sm text-gray-400">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
-            Explorer workflow
-          </h2>
-          <ol className="list-decimal list-inside space-y-1.5">
-            <li>GitHub returns repo info + file tree (paths only)</li>
-            <li>We pick ~60 anchor files (routes, components, APIs, folders)</li>
-            <li>Import-aware connections (UI → API, co-located components)</li>
-            <li>Colored map shows roles and how layers connect</li>
-            <li>
-              Tour: <kbd className="text-gray-300 px-1">N</kbd> /{" "}
-              <kbd className="text-gray-300 px-1">P</kbd> through anchor files
-            </li>
-            <li>
-              <kbd className="text-gray-300 px-1">Shift</kbd>+click to bundle files;
-              export repurposing prompt (+ optional source from GitHub)
-            </li>
-            <li>
-              <strong className="text-gray-300">UI Studio</strong> — frontend-only
-              map + copy UI design prompt for your stack
-            </li>
-          </ol>
-        </div>
+          <p className="text-center mt-3 text-[10px]" style={{ color: "var(--text-muted)" }}>
+            Lite = snapshot only ·{" "}
+            <button
+              type="button"
+              disabled={loading || !url.trim()}
+              onClick={() => startIngest(url, "deep")}
+              className="underline hover:no-underline"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Deep (legacy DB)
+            </button>
+          </p>
 
-        <div>
-          <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">
-            Recent repositories
-          </h2>
-          {reposError && (
-            <p className="text-xs text-red-400 mb-3">{reposError}</p>
-          )}
-          {!reposLoading && !reposError && repos.length === 0 && (
-            <p className="text-sm text-gray-600 italic">
-              No repositories yet. Paste a URL or pick a demo repo above.
+          {error && (
+            <p className="mt-3 text-center text-sm" style={{ color: "#f87171" }}>
+              {error}
             </p>
           )}
-          {repos.length > 0 && (
-            <div className="space-y-2">
-              {repos.map((repo) => {
-                const href = repoHref(repo);
-                const isError = repo.status === "error";
-                const inner = (
-                  <div className="flex items-center justify-between rounded-lg border border-gray-800 bg-gray-800/30 px-4 py-3 hover:border-gray-700 hover:bg-gray-800/50 transition-colors">
-                    <div>
-                      <p className="font-medium text-gray-200">{repo.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(repo.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs font-medium capitalize ${statusColor[repo.status] || "text-gray-400"}`}
-                      >
-                        {repo.status}
-                      </span>
-                      {isError && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (repo.url) startIngest(repo.url);
-                          }}
-                          className="text-[10px] px-2 py-0.5 rounded border border-gray-700 text-gray-400 hover:text-gray-200"
-                        >
-                          Retry
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-                if (href) {
-                  return (
-                    <Link key={repo.id} href={href}>
-                      {inner}
-                    </Link>
-                  );
-                }
-                return (
-                  <div key={repo.id} className="cursor-default">
-                    {inner}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        </form>
+
+        <p className="mt-8 text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
+          Press <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>?</kbd> on
+          the map for panels · <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>N</kbd> /{" "}
+          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>P</kbd> tour
+        </p>
       </div>
     </main>
   );

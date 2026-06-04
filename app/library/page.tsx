@@ -53,31 +53,37 @@ function LibraryContent() {
     syncUrl(leftId, rightId);
   }
 
-  return (
-    <main className="min-h-[calc(100vh-3rem)] bg-gray-950 text-white">
-      <div className="mx-auto max-w-5xl px-6 py-12">
-        <Link
-          href="/"
-          className="text-xs text-gray-500 hover:text-gray-300 mb-6 inline-block"
-        >
-          ← Map a new repo
-        </Link>
+  const selectClass =
+    "flex-1 text-xs rounded px-3 py-2 font-mono outline-none border";
+  const selectStyle = {
+    background: "var(--bg-elevated)",
+    borderColor: "var(--border-default)",
+    color: "var(--text-primary)",
+  };
 
+  return (
+    <main
+      className="blueprint-grid min-h-[calc(100vh-var(--header-h))]"
+      style={{ color: "var(--text-primary)" }}
+    >
+      <div className="mx-auto max-w-5xl px-6 py-12">
+        <p className="panel-label mb-2">Saved maps</p>
         <h1 className="text-2xl font-bold mb-2">Repo library</h1>
-        <p className="text-sm text-gray-400 mb-8 max-w-2xl">
+        <p className="text-sm mb-8 max-w-2xl" style={{ color: "var(--text-secondary)" }}>
           Revisit mapped repos, compare two architectures side-by-side, and export
           selective capability bundles from any tour.
         </p>
 
-        <section className="mb-12 rounded-xl border border-gray-800 bg-gray-900/30 p-5">
-          <h2 className="text-sm font-semibold text-gray-200 mb-3">
+        <section className="panel-blueprint p-5 mb-12">
+          <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
             Compare two repos
           </h2>
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <select
               value={leftId}
               onChange={(e) => setLeftId(e.target.value)}
-              className="flex-1 text-xs bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-200"
+              className={selectClass}
+              style={selectStyle}
             >
               <option value="">Repository A…</option>
               {ready.map((r) => (
@@ -89,7 +95,8 @@ function LibraryContent() {
             <select
               value={rightId}
               onChange={(e) => setRightId(e.target.value)}
-              className="flex-1 text-xs bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-gray-200"
+              className={selectClass}
+              style={selectStyle}
             >
               <option value="">Repository B…</option>
               {ready.map((r) => (
@@ -101,10 +108,8 @@ function LibraryContent() {
             <button
               type="button"
               onClick={runCompare}
-              disabled={
-                !leftId || !rightId || leftId === rightId || loading
-              }
-              className="text-xs font-medium px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-40 shrink-0"
+              disabled={!leftId || !rightId || leftId === rightId || loading}
+              className="btn-blueprint-primary shrink-0 px-4 py-2 disabled:opacity-40"
             >
               Compare
             </button>
@@ -115,18 +120,18 @@ function LibraryContent() {
           )}
         </section>
 
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
-          All mapped repos
-        </h2>
+        <p className="panel-label mb-3">All mapped repos</p>
 
         {loading && (
-          <p className="text-sm text-gray-500">Loading mapped repositories…</p>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            Loading mapped repositories…
+          </p>
         )}
 
         {!loading && ready.length === 0 && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             No completed maps yet.{" "}
-            <Link href="/" className="text-blue-400 hover:underline">
+            <Link href="/" style={{ color: "var(--accent)" }}>
               Map your first repo
             </Link>
             .
@@ -136,25 +141,26 @@ function LibraryContent() {
         <ul className="space-y-3">
           {ready.map((repo) => (
             <li key={repo.id}>
-              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-800 bg-gray-900/50 px-4 py-3 hover:border-violet-500/30 transition-colors">
-                <Link
-                  href={`/analyze/${repo.id}`}
-                  className="flex-1 min-w-0"
-                >
-                  <p className="font-medium text-gray-100">{repo.name}</p>
+              <div className="panel-blueprint px-4 py-3 flex flex-wrap items-center gap-2 hover:border-[var(--border-strong)] transition-colors">
+                <Link href={`/analyze/${repo.id}`} className="flex-1 min-w-0">
+                  <p className="font-medium">{repo.name}</p>
                   {repo.url && (
-                    <p className="text-[11px] text-gray-500 font-mono truncate mt-0.5">
+                    <p
+                      className="text-[11px] font-mono truncate mt-0.5"
+                      style={{ color: "var(--text-muted)" }}
+                    >
                       {repo.url}
                     </p>
                   )}
-                  <p className="text-[10px] text-gray-600 mt-1">
+                  <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
                     {repo.fileCount ?? "—"} anchors ·{" "}
                     <span
-                      className={
-                        repo.mode === "deep"
-                          ? "text-amber-500/80"
-                          : "text-emerald-500/80"
-                      }
+                      style={{
+                        color:
+                          repo.mode === "deep"
+                            ? "var(--role-core)"
+                            : "var(--role-api)",
+                      }}
                     >
                       {repo.mode ?? "lite"}
                     </span>
@@ -163,13 +169,19 @@ function LibraryContent() {
                   </p>
                 </Link>
                 <div className="flex gap-2 shrink-0">
+                  <Link
+                    href={`/analyze/${repo.id}/ui`}
+                    className="btn-blueprint"
+                  >
+                    UI Studio
+                  </Link>
                   <button
                     type="button"
                     onClick={() => {
                       setLeftId(repo.id);
                       if (rightId === repo.id) setRightId("");
                     }}
-                    className="text-[10px] px-2 py-1 rounded border border-gray-700 text-gray-500 hover:text-violet-300"
+                    className="btn-blueprint"
                   >
                     Compare A
                   </button>
@@ -179,7 +191,7 @@ function LibraryContent() {
                       setRightId(repo.id);
                       if (leftId === repo.id) setLeftId("");
                     }}
-                    className="text-[10px] px-2 py-1 rounded border border-gray-700 text-gray-500 hover:text-violet-300"
+                    className="btn-blueprint"
                   >
                     Compare B
                   </button>
@@ -190,7 +202,7 @@ function LibraryContent() {
         </ul>
 
         {!loading && repos.length > ready.length && (
-          <p className="text-xs text-gray-600 mt-6">
+          <p className="text-xs mt-6" style={{ color: "var(--text-muted)" }}>
             {repos.length - ready.length} repo(s) still processing or failed.
           </p>
         )}
@@ -203,8 +215,11 @@ export default function LibraryPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-[calc(100vh-3rem)] bg-gray-950 text-white px-6 py-12">
-          <p className="text-sm text-gray-500">Loading library…</p>
+        <main
+          className="blueprint-grid min-h-[calc(100vh-var(--header-h))] px-6 py-12"
+          style={{ color: "var(--text-muted)" }}
+        >
+          <p className="text-sm">Loading library…</p>
         </main>
       }
     >

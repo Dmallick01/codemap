@@ -28,10 +28,21 @@ type GraphResponse = {
 
 function Spinner() {
   return (
-    <div className="flex-1 flex items-center justify-center text-white min-h-[50vh]">
+    <div
+      className="map-canvas-bg flex items-center justify-center"
+      style={{ height: "calc(100vh - var(--header-h))" }}
+    >
       <div className="text-center">
-        <div className="w-8 h-8 border-2 border-blue-500/50 border-t-blue-400 rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-sm text-gray-500">Loading repo tour…</p>
+        <div
+          className="w-8 h-8 border-2 rounded-full animate-spin mx-auto mb-4"
+          style={{
+            borderColor: "var(--accent-dim)",
+            borderTopColor: "var(--accent)",
+          }}
+        />
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Loading architecture map…
+        </p>
       </div>
     </div>
   );
@@ -40,21 +51,27 @@ function Spinner() {
 function CenteredMessage({
   title,
   subtitle,
-  accent = "text-gray-400",
+  accent,
 }: {
   title: string;
   subtitle?: string;
   accent?: string;
 }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center text-white gap-3 min-h-[50vh]">
-      <p className={`text-sm font-medium ${accent}`}>{title}</p>
-      {subtitle && <p className="text-xs text-gray-600">{subtitle}</p>}
-      <Link
-        href="/"
-        className="mt-2 text-xs text-gray-500 hover:text-gray-300 transition-colors"
-      >
-        ← Back to home
+    <div
+      className="map-canvas-bg flex flex-col items-center justify-center gap-3"
+      style={{ height: "calc(100vh - var(--header-h))" }}
+    >
+      <p className="text-sm font-medium" style={{ color: accent ?? "var(--text-secondary)" }}>
+        {title}
+      </p>
+      {subtitle && (
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          {subtitle}
+        </p>
+      )}
+      <Link href="/" className="btn-blueprint mt-2">
+        ← Map a repo
       </Link>
     </div>
   );
@@ -134,35 +151,25 @@ export default function AnalyzePage() {
     }
   }, [repoUrl, reanalyzing, router]);
 
-  if (loading) {
-    return (
-      <div className="h-[calc(100vh-3rem)] flex flex-col bg-gray-950">
-        <Spinner />
-      </div>
-    );
-  }
+  if (loading) return <Spinner />;
 
   if (error) {
     return (
-      <div className="h-[calc(100vh-3rem)] flex flex-col bg-gray-950">
-        <CenteredMessage
-          title={error}
-          subtitle="Could not load graph data."
-          accent="text-red-400"
-        />
-      </div>
+      <CenteredMessage
+        title={error}
+        subtitle="Could not load graph data."
+        accent="#f87171"
+      />
     );
   }
 
   if (fileCount === 0) {
     return (
-      <div className="h-[calc(100vh-3rem)] flex flex-col bg-gray-950">
-        <CenteredMessage
-          title="No graph data yet"
-          subtitle="Run Map repo first, then open the tour."
-          accent="text-yellow-400"
-        />
-      </div>
+      <CenteredMessage
+        title="No graph data yet"
+        subtitle="Run Map repo first, then open the tour."
+        accent="var(--role-core)"
+      />
     );
   }
 

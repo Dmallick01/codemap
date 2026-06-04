@@ -11,7 +11,7 @@ type GraphResponse = {
   repoUrl?: string | null;
   nodes: Node[];
   edges: Edge[];
-  meta?: { mode?: string };
+  meta?: { mode?: string; fileCount?: number; edgeCount?: number };
   error?: string;
 };
 
@@ -57,46 +57,41 @@ export default function UiStudioPage() {
     };
   }, [params.repoId]);
 
-  return (
-    <div className="h-[calc(100vh-3rem)] flex flex-col bg-gray-950 text-white overflow-hidden">
-      <header className="flex-none flex items-center gap-3 px-4 py-2 border-b border-sky-900/40 bg-gray-950/95 z-20">
-        <Link
-          href={`/analyze/${params.repoId}`}
-          className="text-[11px] text-gray-500 hover:text-gray-300"
-        >
+  if (loading) {
+    return (
+      <div
+        className="map-canvas-bg flex items-center justify-center"
+        style={{ height: "calc(100vh - var(--header-h))", color: "var(--text-muted)" }}
+      >
+        <p className="text-sm">Loading UI layer…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="map-canvas-bg flex flex-col items-center justify-center gap-3"
+        style={{ height: "calc(100vh - var(--header-h))" }}
+      >
+        <p className="text-sm" style={{ color: "#f87171" }}>
+          {error}
+        </p>
+        <Link href={`/analyze/${params.repoId}`} className="btn-blueprint">
           ← Architecture
         </Link>
-        <h1 className="text-xs font-semibold text-sky-200 truncate">
-          UI Studio · {repoName}
-        </h1>
-        <div className="flex-1" />
-        <span className="text-[9px] uppercase px-2 py-0.5 rounded bg-sky-500/15 text-sky-400 font-bold">
-          Frontend visualizer
-        </span>
-      </header>
+      </div>
+    );
+  }
 
-      {loading && (
-        <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          Loading UI layer…
-        </div>
-      )}
-
-      {error && (
-        <div className="flex-1 flex items-center justify-center text-red-400 text-sm">
-          {error}
-        </div>
-      )}
-
-      {!loading && !error && (
-        <UiStudioView
-          repoId={params.repoId}
-          repoName={repoName}
-          repoUrl={repoUrl}
-          mapMode={mapMode}
-          rawNodes={nodes}
-          rawEdges={edges}
-        />
-      )}
-    </div>
+  return (
+    <UiStudioView
+      repoId={params.repoId}
+      repoName={repoName}
+      repoUrl={repoUrl}
+      mapMode={mapMode}
+      rawNodes={nodes}
+      rawEdges={edges}
+    />
   );
 }

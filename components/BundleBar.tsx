@@ -24,24 +24,40 @@ export default function BundleBar({
   if (anchors.length === 0) return null;
 
   return (
-    <div className="flex-none border-t border-violet-500/30 bg-violet-950/40 z-30">
-      <div className="px-4 py-2 flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-300">
+    <div
+      className="flex-none z-30 border-t px-3 py-2"
+      style={{
+        borderColor: "var(--role-routing)",
+        background: "rgba(167, 139, 250, 0.08)",
+      }}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <span
+          className="text-[10px] font-semibold uppercase tracking-wider"
+          style={{ color: "var(--role-routing)" }}
+        >
           Export bundle · {anchors.length}/{max}
         </span>
         {atCap && (
-          <span className="text-[9px] text-amber-400/90">Max anchors</span>
+          <span className="text-[9px]" style={{ color: "var(--role-core)" }}>
+            Max anchors
+          </span>
         )}
         <div className="flex flex-wrap gap-1 flex-1 min-w-0">
           {anchors.map((a) => (
             <span
               key={a.nodeId}
-              className="inline-flex items-center gap-1 text-[10px] font-mono bg-gray-900/80 border border-violet-500/30 rounded px-2 py-0.5 max-w-[14rem]"
+              className="inline-flex items-center gap-1 text-[10px] font-mono rounded px-2 py-0.5 max-w-[14rem] border"
+              style={{
+                borderColor: "var(--border-default)",
+                background: "var(--bg-elevated)",
+              }}
             >
               <button
                 type="button"
                 onClick={() => onFocus(a.nodeId)}
-                className="truncate text-violet-200 hover:text-white"
+                className="truncate hover:underline"
+                style={{ color: "var(--text-primary)" }}
                 title={a.path}
               >
                 {a.path.split("/").pop()}
@@ -49,7 +65,8 @@ export default function BundleBar({
               <button
                 type="button"
                 onClick={() => onRemove(a.nodeId)}
-                className="text-gray-500 hover:text-red-400 shrink-0"
+                className="shrink-0"
+                style={{ color: "var(--text-muted)" }}
                 aria-label="Remove from bundle"
               >
                 ×
@@ -57,18 +74,10 @@ export default function BundleBar({
             </span>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={onExport}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white"
-        >
+        <button type="button" onClick={onExport} className="btn-blueprint-primary">
           Export bundle prompt
         </button>
-        <button
-          type="button"
-          onClick={onClear}
-          className="text-[11px] px-2 py-1 rounded border border-gray-700 text-gray-500 hover:text-gray-300"
-        >
+        <button type="button" onClick={onClear} className="btn-blueprint">
           Clear
         </button>
       </div>

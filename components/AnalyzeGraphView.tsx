@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useCallback, useState } from "react";
-import Link from "next/link";
 import MapImportExport from "@/components/MapImportExport";
 import {
   ReactFlow,
@@ -26,6 +25,7 @@ import ExplorerToolbar from "@/components/ExplorerToolbar";
 import SpecimenPanel from "@/components/SpecimenPanel";
 import ExportPromptSheet from "@/components/ExportPromptSheet";
 import BundleBar from "@/components/BundleBar";
+import FocusMapHUD from "@/components/FocusMapHUD";
 import type {
   RepurposeExportContext,
   BundleExportContext,
@@ -57,7 +57,7 @@ function styleEdges(eds: Edge[], focusId: string | null): Edge[] {
       animated: !!connected,
       style: connected
         ? { stroke: base.stroke, strokeWidth: base.strokeWidth + 1 }
-        : { stroke: base.stroke, strokeWidth: base.strokeWidth * 0.6 },
+        : { stroke: base.stroke, strokeWidth: base.strokeWidth * 0.55 },
       markerEnd: {
         type: MarkerType.ArrowClosed,
         color: connected ? base.stroke : `${base.stroke}55`,
@@ -67,10 +67,10 @@ function styleEdges(eds: Edge[], focusId: string | null): Edge[] {
 }
 
 function minimapColor(node: Node): string {
-  if (node.type === "groupNode") return "#1e293b";
+  if (node.type === "groupNode") return "var(--bg-elevated)";
   const role = (node.data as FileNodeData)?.role as ArchRole | undefined;
   if (role && ROLE_META[role]) return ROLE_META[role].color;
-  return "#475569";
+  return "var(--text-muted)";
 }
 
 type Props = {
@@ -93,7 +93,6 @@ function AnalyzeGraphInner({
   repoId,
   repoName,
   repoUrl,
-  repoStatus,
   initialNodes,
   initialEdges,
   overview,
@@ -109,6 +108,7 @@ function AnalyzeGraphInner({
   const { fitView } = useReactFlow();
   const { selectedNode, setSelectedNode } = useGraphStore();
   const [exportOpen, setExportOpen] = useState(false);
+  const [chromeOpen, setChromeOpen] = useState(false);
 
   const fileNodesOnly = useMemo(
     () => nodes.filter((n) => n.type === "fileNode"),
@@ -146,18 +146,20 @@ function AnalyzeGraphInner({
     mapMode,
   ]);
 
-  const bundleExport: Omit<BundleExportContext, "bundlePaths" | "includeNeighbors"> | null =
-    useMemo(() => {
-      if (bundle.anchors.length === 0) return null;
-      return {
-        repoName,
-        repoUrl,
-        mapMode,
-        anchors: bundle.anchors,
-        fileNodes: fileNodesOnly,
-        edges,
-      };
-    }, [bundle.anchors, fileNodesOnly, edges, repoName, repoUrl, mapMode]);
+  const bundleExport: Omit<
+    BundleExportContext,
+    "bundlePaths" | "includeNeighbors"
+  > | null = useMemo(() => {
+    if (bundle.anchors.length === 0) return null;
+    return {
+      repoName,
+      repoUrl,
+      mapMode,
+      anchors: bundle.anchors,
+      fileNodes: fileNodesOnly,
+      edges,
+    };
+  }, [bundle.anchors, fileNodesOnly, edges, repoName, repoUrl, mapMode]);
 
   const highlightIds = useMemo(() => {
     const set = new Set<string>();
@@ -195,7 +197,7 @@ function AnalyzeGraphInner({
               : n.data,
           style: {
             ...n.style,
-            opacity: dimmed ? 0.22 : 1,
+            opacity: dimmed ? 0.18 : 1,
             transition: "opacity 0.2s ease",
           },
         };
@@ -219,13 +221,17 @@ function AnalyzeGraphInner({
     const t = setTimeout(() => {
       fitView({
         nodes: [{ id: explorer.currentNode!.id }],
-        padding: 0.55,
+        padding: 0.5,
         duration: 280,
-        maxZoom: 1.15,
+        maxZoom: 1.2,
       });
     }, 50);
     return () => clearTimeout(t);
   }, [explorer.currentNode?.id, fitView]);
+
+  const toggleChrome = useCallback(() => {
+    setChromeOpen((v) => !v);
+  }, []);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -235,6 +241,12 @@ function AnalyzeGraphInner({
       switch (e.key) {
         case "Escape":
           setSelectedNode(null);
+          setChromeOpen(false);
+          break;
+        case "?":
+        case "h":
+        case "H":
+          toggleChrome();
           break;
         case "n":
         case "N":
@@ -252,20 +264,15 @@ function AnalyzeGraphInner({
         case "R":
           explorer.goRandom();
           break;
-        case "?":
-          explorer.setShowHelp((v) => !v);
-          break;
         default:
           break;
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [explorer, setSelectedNode]);
+  }, [explorer, setSelectedNode, toggleChrome]);
 
-  const openExport = useCallback(() => {
-    setExportOpen(true);
-  }, []);
+  const openExport = useCallback(() => setExportOpen(true), []);
 
   const onNodeClick = useCallback(
     (ev: React.MouseEvent, node: Node) => {
@@ -280,182 +287,170 @@ function AnalyzeGraphInner({
     [explorer, bundle],
   );
 
-  const onPaneClick = useCallback(() => {
-    setSelectedNode(null);
-  }, [setSelectedNode]);
-
-  const groupCount = nodes.filter((n) => n.type === "groupNode").length;
+  const onPaneClick = useCallback(() => setSelectedNode(null), [setSelectedNode]);
 
   return (
-    <div className="h-[calc(100vh-3rem)] flex flex-col bg-gray-950 text-white overflow-hidden">
-      <header className="flex-none min-h-12 flex flex-wrap items-center gap-3 px-4 py-2 border-b border-gray-800 bg-gray-950/90 backdrop-blur-sm z-20">
-        <h1 className="text-xs font-semibold text-gray-300 truncate max-w-[28ch]">
-          {repoName}
-        </h1>
-        <nav className="flex items-center gap-1 text-[10px]">
-          <span className="px-2 py-1 rounded bg-gray-800 text-gray-300 font-medium">
-            Architecture
-          </span>
-          <Link
-            href={`/analyze/${repoId}/ui`}
-            className="px-2 py-1 rounded border border-sky-800/50 text-sky-400/90 hover:bg-sky-500/10 hover:text-sky-300 transition-colors"
-          >
-            UI Studio →
-          </Link>
-        </nav>
-        <div className="flex-1" />
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600">
-          <span>
-            <span className="text-gray-400 font-medium">{fileCount}</span> tour
-            stops
-          </span>
-          <span>
-            <span className="text-gray-400 font-medium">{groupCount}</span>{" "}
-            groups
-          </span>
-          <span>
-            <span className="text-gray-400 font-medium">{edges.length}</span>{" "}
-            connections
-          </span>
-          <span
-            className={`px-2 py-0.5 rounded-full text-[9px] uppercase font-bold tracking-wide ${
-              repoStatus === "done"
-                ? "bg-emerald-500/15 text-emerald-400"
-                : "bg-yellow-500/15 text-yellow-400"
-            }`}
-          >
-            {repoStatus || "unknown"}
-          </span>
-        </div>
-        <MapImportExport
-          variant="export"
-          repoId={repoId}
-          repoName={repoName}
-          repoUrl={repoUrl}
-          sourceType={sourceType}
-          nodes={nodes}
-          edges={edges}
-          meta={{
-            fileCount,
-            edgeCount,
-            layout: "semantic-2d",
-            mode: mapMode === "deep" ? "deep" : "lite",
-            overview: overview as Record<string, unknown> | null,
+    <div
+      className="relative overflow-hidden"
+      style={{ height: "calc(100vh - var(--header-h))" }}
+    >
+      <ReactFlow
+        nodes={displayNodes}
+        edges={styledEdges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
+        minZoom={0.04}
+        maxZoom={2}
+        nodesDraggable
+        nodesConnectable={false}
+        elementsSelectable
+        className="map-canvas-bg"
+        proOptions={{ hideAttribution: true }}
+      >
+        {!chromeOpen && <Controls position="bottom-left" />}
+        <MiniMap
+          position="bottom-right"
+          nodeColor={minimapColor}
+          maskColor="rgba(4, 8, 16, 0.85)"
+          style={{
+            marginBottom: chromeOpen ? 220 : 12,
+            marginRight: 12,
           }}
         />
-        {repoUrl && (
-          <button
-            onClick={onReanalyze}
-            disabled={reanalyzing}
-            className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-500 transition-colors disabled:opacity-50"
-          >
-            {reanalyzing ? "Re-analyzing…" : "Re-analyze"}
-          </button>
-        )}
-      </header>
+        <Background
+          variant={BackgroundVariant.Lines}
+          gap={24}
+          size={1}
+          color="var(--grid-line)"
+        />
+      </ReactFlow>
 
-      <div className="flex-1 flex flex-col relative min-h-0">
-        <div className="flex-1 relative min-h-0">
-          <ReactFlow
-            nodes={displayNodes}
-            edges={styledEdges}
-            nodeTypes={nodeTypes}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onNodeClick={onNodeClick}
-            onPaneClick={onPaneClick}
-            minZoom={0.05}
-            maxZoom={2}
-            nodesDraggable
-            nodesConnectable={false}
-            elementsSelectable
-            style={{ background: "#030712" }}
-          >
-            <Controls
-              style={{
-                background: "#111827",
-                border: "1px solid #1f2937",
-                borderRadius: "8px",
-              }}
-            />
-            <MiniMap
-              nodeColor={minimapColor}
-              maskColor="rgba(3, 7, 18, 0.8)"
-              style={{
-                background: "#0f172a",
-                border: "1px solid #1f2937",
-                borderRadius: "8px",
-              }}
-            />
-            <Background
-              variant={BackgroundVariant.Dots}
-              gap={24}
-              size={1}
-              color="#1e293b"
-            />
-          </ReactFlow>
+      <FocusMapHUD
+        repoName={repoName}
+        fileCount={fileCount}
+        edgeCount={edgeCount}
+        tourIndex={explorer.index}
+        tourTotal={explorer.total}
+        currentPath={explorer.currentPath}
+        chromeOpen={chromeOpen}
+        onToggleChrome={toggleChrome}
+        onPrev={explorer.goPrev}
+        onNext={explorer.goNext}
+        onExport={bundle.count > 0 ? openExport : undefined}
+        bundleCount={bundle.count}
+      />
 
-          <RepoOverviewPanel
-            repoName={repoName}
-            overview={overview}
-            mode={mapMode}
-          />
-          <div className="absolute bottom-4 right-4 z-10 max-w-[240px] pointer-events-none opacity-90">
-            <GraphLegend />
+      {!chromeOpen && (
+        <div className="absolute bottom-3 right-3 z-20 pointer-events-auto">
+          <GraphLegend />
+        </div>
+      )}
+
+      {chromeOpen && (
+        <>
+          <div className="absolute top-24 left-3 z-10 max-w-sm">
+            <RepoOverviewPanel
+              repoName={repoName}
+              overview={overview}
+              mode={mapMode}
+            />
           </div>
-          {selectedNode && <NodeDetail />}
-        </div>
 
-        <BundleBar
-          anchors={bundle.anchors}
-          max={bundle.max}
-          atCap={bundle.atCap}
-          onClear={bundle.clear}
-          onRemove={bundle.remove}
-          onExport={openExport}
-          onFocus={explorer.focusIdByNodeId}
-        />
-        <SpecimenPanel
-          index={explorer.index}
-          total={explorer.total}
-          viewedCount={explorer.viewedCount}
-          data={explorer.currentData}
-          nodeId={explorer.currentNode?.id ?? null}
-          neighbors={explorer.neighbors}
-          onJumpTo={explorer.focusIdByNodeId}
-          onExportPrompt={openExport}
-          bundleCount={bundle.count}
-          inBundle={
-            explorer.currentNode
-              ? bundle.isSelected(explorer.currentNode.id)
-              : false
-          }
-          onToggleBundle={() => {
-            if (explorer.currentNode) bundle.toggle(explorer.currentNode.id);
-          }}
-          atBundleCap={bundle.atCap}
-        />
-        <ExportPromptSheet
-          open={exportOpen}
-          onClose={() => setExportOpen(false)}
-          repoId={repoId}
-          single={bundle.count === 0 ? singleExport : null}
-          bundle={bundle.count > 0 ? bundleExport : null}
-        />
-        <ExplorerToolbar
-          index={explorer.index}
-          total={explorer.total}
-          viewedCount={explorer.viewedCount}
-          currentPath={explorer.currentPath}
-          onPrev={explorer.goPrev}
-          onNext={explorer.goNext}
-          onRandom={explorer.goRandom}
-          showHelp={explorer.showHelp}
-          onToggleHelp={() => explorer.setShowHelp((v) => !v)}
-          bundleCount={bundle.count}
-          onExportBundle={bundle.count > 0 ? openExport : undefined}
-        />
-      </div>
+          {chromeOpen && selectedNode && <NodeDetail />}
+
+          <div
+            className="absolute bottom-0 left-0 right-0 z-20 flex flex-col border-t"
+            style={{
+              borderColor: "var(--border-subtle)",
+              background: "var(--bg-glass)",
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            <BundleBar
+              anchors={bundle.anchors}
+              max={bundle.max}
+              atCap={bundle.atCap}
+              onClear={bundle.clear}
+              onRemove={bundle.remove}
+              onExport={openExport}
+              onFocus={explorer.focusIdByNodeId}
+            />
+            <SpecimenPanel
+              index={explorer.index}
+              total={explorer.total}
+              viewedCount={explorer.viewedCount}
+              data={explorer.currentData}
+              nodeId={explorer.currentNode?.id ?? null}
+              neighbors={explorer.neighbors}
+              onJumpTo={explorer.focusIdByNodeId}
+              onExportPrompt={openExport}
+              bundleCount={bundle.count}
+              inBundle={
+                explorer.currentNode
+                  ? bundle.isSelected(explorer.currentNode.id)
+                  : false
+              }
+              onToggleBundle={() => {
+                if (explorer.currentNode) bundle.toggle(explorer.currentNode.id);
+              }}
+              atBundleCap={bundle.atCap}
+            />
+            <div className="flex items-center gap-2 px-3 py-2 border-t" style={{ borderColor: "var(--border-subtle)" }}>
+              <ExplorerToolbar
+                index={explorer.index}
+                total={explorer.total}
+                viewedCount={explorer.viewedCount}
+                currentPath={explorer.currentPath}
+                onPrev={explorer.goPrev}
+                onNext={explorer.goNext}
+                onRandom={explorer.goRandom}
+                showHelp={explorer.showHelp}
+                onToggleHelp={() => explorer.setShowHelp((v) => !v)}
+                bundleCount={bundle.count}
+                onExportBundle={bundle.count > 0 ? openExport : undefined}
+              />
+              <div className="flex-1" />
+              <MapImportExport
+                variant="export"
+                repoId={repoId}
+                repoName={repoName}
+                repoUrl={repoUrl}
+                sourceType={sourceType}
+                nodes={nodes}
+                edges={edges}
+                meta={{
+                  fileCount,
+                  edgeCount,
+                  layout: "semantic-2d",
+                  mode: mapMode === "deep" ? "deep" : "lite",
+                  overview: overview as Record<string, unknown> | null,
+                }}
+              />
+              {repoUrl && (
+                <button
+                  type="button"
+                  onClick={onReanalyze}
+                  disabled={reanalyzing}
+                  className="btn-blueprint"
+                >
+                  {reanalyzing ? "…" : "Re-map"}
+                </button>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      <ExportPromptSheet
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        repoId={repoId}
+        single={bundle.count === 0 ? singleExport : null}
+        bundle={bundle.count > 0 ? bundleExport : null}
+      />
     </div>
   );
 }

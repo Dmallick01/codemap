@@ -3,6 +3,18 @@
 import { ROLE_META, type ArchRole } from "@/lib/graph/semantic";
 import { edgeStyle } from "@/lib/graph/semantic";
 
+const ROLE_CSS: Record<ArchRole, string> = {
+  entry: "var(--role-entry)",
+  routing: "var(--role-routing)",
+  ui: "var(--role-ui)",
+  api: "var(--role-api)",
+  core: "var(--role-core)",
+  tool: "var(--role-tool)",
+  data: "var(--role-data)",
+  config: "var(--role-config)",
+  test: "var(--role-test)",
+};
+
 const EDGE_TYPES = [
   "flows",
   "imports",
@@ -14,15 +26,11 @@ const EDGE_TYPES = [
 
 export default function GraphLegend() {
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-950/95 backdrop-blur-sm p-3 shadow-xl text-[10px]">
-      <p className="text-[9px] uppercase tracking-widest text-gray-500 font-semibold mb-2">
-        How to read this map
-      </p>
-      <p className="text-gray-400 leading-relaxed mb-3">
-        <span className="text-gray-300">X-axis</span> = architectural role
-        (entry → API → core).{" "}
-        <span className="text-gray-300">Y-axis</span> = folder groups spread
-        down the page.
+    <div className="panel-blueprint p-3 text-[10px] pointer-events-auto max-w-[260px]">
+      <p className="panel-label mb-2">Blueprint legend</p>
+      <p className="leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
+        <span style={{ color: "var(--text-primary)" }}>X</span> = role layer ·{" "}
+        <span style={{ color: "var(--text-primary)" }}>Y</span> = folder group
       </p>
       <div className="space-y-1.5 mb-3">
         {(Object.keys(ROLE_META) as ArchRole[])
@@ -32,28 +40,32 @@ export default function GraphLegend() {
             return (
               <div key={role} className="flex items-center gap-2">
                 <span
-                  className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-                  style={{ background: m.color }}
+                  className="w-2.5 h-2.5 rounded-sm shrink-0"
+                  style={{ background: ROLE_CSS[role] }}
                 />
-                <span className="text-gray-300 font-medium">{m.label}</span>
-                <span className="text-gray-600 truncate">{m.description}</span>
+                <span className="font-medium" style={{ color: "var(--text-primary)" }}>
+                  {m.label}
+                </span>
+                <span className="truncate" style={{ color: "var(--text-muted)" }}>
+                  {m.description}
+                </span>
               </div>
             );
           })}
       </div>
-      <p className="text-[9px] uppercase tracking-widest text-gray-500 font-semibold mb-1.5">
-        Connections
-      </p>
+      <p className="panel-label mb-1.5">Connections</p>
       <div className="space-y-1">
         {EDGE_TYPES.map((type) => {
           const s = edgeStyle(type);
           return (
             <div key={type} className="flex items-center gap-2">
               <span
-                className="w-6 h-0.5 flex-shrink-0 rounded"
+                className="w-6 h-0.5 shrink-0 rounded"
                 style={{ background: s.stroke }}
               />
-              <span className="text-gray-400">{s.label ?? type}</span>
+              <span style={{ color: "var(--text-secondary)" }}>
+                {s.label ?? type}
+              </span>
             </div>
           );
         })}

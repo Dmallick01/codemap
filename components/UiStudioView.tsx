@@ -41,7 +41,7 @@ function styleEdges(eds: Edge[], focusId: string | null): Edge[] {
       animated: !!connected,
       style: {
         stroke: base.stroke,
-        strokeWidth: connected ? base.strokeWidth + 1 : base.strokeWidth,
+        strokeWidth: connected ? base.strokeWidth + 1 : base.strokeWidth * 0.7,
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,
@@ -72,6 +72,7 @@ function UiStudioInner({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [exportOpen, setExportOpen] = useState(false);
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [chromeOpen, setChromeOpen] = useState(false);
 
   const layoutInputs: LayoutFileInput[] = useMemo(() => {
     return rawNodes
@@ -148,7 +149,8 @@ function UiStudioInner({
         style: {
           ...n.style,
           opacity:
-            highlightIds && !highlightIds.has(n.id) ? 0.3 : 1,
+            highlightIds && !highlightIds.has(n.id) ? 0.22 : 1,
+          transition: "opacity 0.2s ease",
         },
       })),
     [nodes, highlightIds],
@@ -180,14 +182,27 @@ function UiStudioInner({
     [repoName, repoUrl, mapMode, layoutNodes, layoutEdges, selectedIds],
   );
 
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key === "?" || e.key === "h" || e.key === "H") {
+        setChromeOpen((v) => !v);
+      }
+      if (e.key === "Escape") setChromeOpen(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   if (!uiFiles.length) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-gray-500 p-8">
+      <div
+        className="map-canvas-bg flex flex-col items-center justify-center p-8"
+        style={{ height: "calc(100vh - var(--header-h))", color: "var(--text-muted)" }}
+      >
         <p className="text-sm">No UI files in this map.</p>
-        <Link
-          href={`/analyze/${repoId}`}
-          className="mt-4 text-xs text-violet-400 hover:underline"
-        >
+        <Link href={`/analyze/${repoId}`} className="btn-blueprint mt-4">
           ← Architecture map
         </Link>
       </div>
@@ -195,66 +210,89 @@ function UiStudioInner({
   }
 
   return (
-    <>
-      <div className="flex-1 relative min-h-0">
-        <ReactFlow
-          nodes={displayNodes}
-          edges={styledEdges}
-          nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
-          onPaneClick={() => {
-            setFocusId(null);
-            setSelectedIds([]);
-          }}
-          minZoom={0.1}
-          maxZoom={1.8}
-          nodesDraggable
-          style={{ background: "#020617" }}
-        >
-          <Controls
-            style={{
-              background: "#0c1222",
-              border: "1px solid #1e3a5f",
-              borderRadius: 8,
-            }}
-          />
-          <MiniMap
-            nodeColor={() => "#38bdf8"}
-            maskColor="rgba(2, 6, 23, 0.85)"
-            style={{ background: "#0f172a", border: "1px solid #1e3a5f" }}
-          />
-          <Background variant={BackgroundVariant.Dots} gap={20} color="#1e3a5f" />
-        </ReactFlow>
+    <div
+      className="relative overflow-hidden"
+      style={{ height: "calc(100vh - var(--header-h))" }}
+    >
+      <ReactFlow
+        nodes={displayNodes}
+        edges={styledEdges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        onPaneClick={() => {
+          setFocusId(null);
+          setSelectedIds([]);
+        }}
+        minZoom={0.1}
+        maxZoom={1.8}
+        nodesDraggable
+        className="map-canvas-bg"
+        proOptions={{ hideAttribution: true }}
+      >
+        {!chromeOpen && <Controls position="bottom-left" />}
+        <MiniMap
+          position="bottom-right"
+          nodeColor={() => "var(--role-ui)"}
+          maskColor="rgba(4, 8, 16, 0.85)"
+          style={{ marginBottom: chromeOpen ? 72 : 12, marginRight: 12 }}
+        />
+        <Background
+          variant={BackgroundVariant.Lines}
+          gap={24}
+          size={1}
+          color="var(--grid-line)"
+        />
+      </ReactFlow>
 
-        <div className="absolute top-3 left-3 z-10 rounded-lg border border-sky-800/40 bg-gray-950/90 px-3 py-2 text-[10px] text-gray-400 max-w-[200px]">
-          <p className="text-sky-400/90 font-semibold uppercase tracking-wider text-[9px] mb-1">
-            UI Studio columns
-          </p>
-          <p>Entry → Layouts → Components → Hooks → Styles</p>
-          <p className="mt-1 text-gray-500">Shift+click to multi-select for export</p>
-        </div>
+      <div className="absolute top-3 left-3 z-20 panel-blueprint px-3 py-2 text-[10px] max-w-[220px] pointer-events-auto">
+        <p className="panel-label mb-1">UI Studio</p>
+        <p style={{ color: "var(--text-secondary)" }}>
+          Entry → Layouts → Components → Hooks → Styles
+        </p>
+        <p className="mt-1 font-mono" style={{ color: "var(--text-muted)" }}>
+          {uiFiles.length} files · shift+click multi-select
+        </p>
       </div>
 
-      <div className="flex-none border-t border-sky-900/40 bg-gray-950 px-4 py-2 flex flex-wrap items-center gap-2">
-        <span className="text-[10px] text-gray-500">
-          {uiFiles.length} UI files · {layoutEdges.length} UI connections
-        </span>
-        {selectedIds.length > 0 && (
-          <span className="text-[10px] text-sky-400">
-            {selectedIds.length} selected
-          </span>
-        )}
-        <div className="flex-1" />
+      <div className="absolute top-3 right-3 z-20 pointer-events-auto">
         <button
           type="button"
-          onClick={() => setExportOpen(true)}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white"
+          onClick={() => setChromeOpen((v) => !v)}
+          className={`btn-blueprint ${chromeOpen ? "nav-tab-active" : ""}`}
         >
-          Copy UI design prompt
+          {chromeOpen ? "Hide panels" : "? Panels"}
         </button>
       </div>
+
+      {chromeOpen && (
+        <div
+          className="absolute bottom-0 left-0 right-0 z-20 flex flex-wrap items-center gap-2 px-4 py-2 border-t"
+          style={{
+            borderColor: "var(--border-subtle)",
+            background: "var(--bg-glass)",
+            backdropFilter: "blur(12px)",
+          }}
+        >
+          <span className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+            {uiFiles.length} UI files · {layoutEdges.length} connections
+          </span>
+          {selectedIds.length > 0 && (
+            <span className="text-[10px]" style={{ color: "var(--accent)" }}>
+              {selectedIds.length} selected
+            </span>
+          )}
+          <div className="flex-1" />
+          <button
+            type="button"
+            onClick={() => setExportOpen(true)}
+            className="btn-blueprint-primary"
+          >
+            Copy UI design prompt
+          </button>
+        </div>
+      )}
 
       <UiDesignExportSheet
         open={exportOpen}
@@ -263,7 +301,7 @@ function UiStudioInner({
         repoName={repoName}
         input={exportInput}
       />
-    </>
+    </div>
   );
 }
 
