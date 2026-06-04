@@ -19,6 +19,7 @@ export type FetchedFile = {
   content: string;
   truncated: boolean;
   error?: string;
+  source?: "github" | "database";
 };
 
 /**
@@ -41,6 +42,7 @@ export async function fetchRepoFilesAtPaths(
         content: "",
         truncated: true,
         error: "Bundle size cap reached",
+        source: "github",
       });
       continue;
     }
@@ -53,6 +55,7 @@ export async function fetchRepoFilesAtPaths(
           content: "",
           truncated: false,
           error: "Not a file",
+          source: "github",
         });
         continue;
       }
@@ -62,6 +65,7 @@ export async function fetchRepoFilesAtPaths(
           content: "",
           truncated: false,
           error: "Empty content",
+          source: "github",
         });
         continue;
       }
@@ -73,6 +77,7 @@ export async function fetchRepoFilesAtPaths(
           content: "",
           truncated: false,
           error: "Binary file skipped",
+          source: "github",
         });
         continue;
       }
@@ -87,7 +92,7 @@ export async function fetchRepoFilesAtPaths(
       const truncated = overFile || final.length < decoded.length;
 
       totalBytes += Buffer.byteLength(final, "utf-8");
-      results.push({ path, content: final, truncated });
+      results.push({ path, content: final, truncated, source: "github" });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       results.push({
@@ -95,6 +100,7 @@ export async function fetchRepoFilesAtPaths(
         content: "",
         truncated: false,
         error: message,
+        source: "github",
       });
     }
   }

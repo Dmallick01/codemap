@@ -9,6 +9,10 @@ import {
 } from "@/lib/export/repurpose-prompt";
 import type { FetchedFile } from "@/lib/services/github-contents";
 import { resolveBundlePaths } from "@/lib/export/bundle";
+import {
+  downloadMarkdown,
+  exportFilename,
+} from "@/lib/export/download-markdown";
 
 type BundleBase = {
   repoName: string;
@@ -42,6 +46,11 @@ export default function ExportPromptSheet({
   const [loadingSources, setLoadingSources] = useState(false);
   const [fetchError, setFetchError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [sourceMeta, setSourceMeta] = useState<{
+    fromDatabase: number;
+    fromGithub: number;
+    mode: string;
+  } | null>(null);
 
   const isBundle = (bundle?.anchors.length ?? 0) > 0;
   const mode = isBundle ? bundle : single;
@@ -68,6 +77,7 @@ export default function ExportPromptSheet({
   useEffect(() => {
     if (!open) {
       setSourceFiles(undefined);
+      setSourceMeta(null);
       setFetchError("");
       setAttachSources(false);
     }
@@ -101,7 +111,10 @@ export default function ExportPromptSheet({
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok) throw new Error(data.error || "Fetch failed");
-        if (!cancelled) setSourceFiles(data.files as FetchedFile[]);
+        if (!cancelled) {
+          setSourceFiles(data.files as FetchedFile[]);
+          if (data.meta) setSourceMeta(data.meta);
+        }
       })
       .catch((e: Error) => {
         if (!cancelled) setFetchError(e.message);
@@ -150,6 +163,12 @@ export default function ExportPromptSheet({
     sourceFiles,
   ]);
 
+  const repoLabel =
+    (isBundle ? bundle?.repoName : single?.repoName) ?? "export";
+  const anchorCount = isBundle
+    ? (bundle?.anchors.length ?? 0)
+    : 1;
+
   const handleCopy = useCallback(async () => {
     if (!prompt || loadingSources) return;
     try {
@@ -160,6 +179,11 @@ export default function ExportPromptSheet({
       /* ignore */
     }
   }, [prompt, loadingSources]);
+
+  const handleDownload = useCallback(() => {
+    if (!prompt || loadingSources) return;
+    downloadMarkdown(exportFilename(repoLabel, anchorCount), prompt);
+  }, [prompt, loadingSources, repoLabel, anchorCount]);
 
   if (!open || !mode) return null;
 
@@ -245,11 +269,17 @@ export default function ExportPromptSheet({
                 onChange={(e) => setAttachSources(e.target.checked)}
                 className="rounded border-gray-600"
               />
-              Attach source files from GitHub
+              Attach source files (deep DB first, else GitHub)
             </label>
           </div>
           {loadingSources && (
             <p className="text-[10px] text-violet-400">Fetching file contents…</p>
+          )}
+          {sourceMeta && attachSources && !loadingSources && (
+            <p className="text-[10px] text-gray-500">
+              Sources: {sourceMeta.fromDatabase} from database,{" "}
+              {sourceMeta.fromGithub} from GitHub ({sourceMeta.mode} mode)
+            </p>
           )}
           {fetchError && (
             <p className="text-[10px] text-red-400">{fetchError}</p>
@@ -269,14 +299,22 @@ export default function ExportPromptSheet({
           className="flex-1 min-h-[220px] m-4 text-[11px] font-mono text-gray-300 bg-gray-900/80 border border-gray-800 rounded-lg p-3 leading-relaxed resize-none"
         />
 
-        <div className="flex-none px-4 pb-4 flex gap-2">
+        <div className="flex-none px-4 pb-4 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={handleCopy}
             disabled={loadingSources}
-            className="flex-1 text-xs font-medium py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white transition-colors disabled:opacity-50"
+            className="flex-1 min-w-[120px] text-xs font-medium py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white transition-colors disabled:opacity-50"
           >
-            {copied ? "Copied" : loadingSources ? "Loading sources…" : "Copy prompt"}
+            {copied ? "Copied" : loadingSources ? "Loading…" : "Copy prompt"}
+          </button>
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={loadingSources || !prompt}
+            className="flex-1 min-w-[120px] text-xs font-medium py-2 rounded-lg border border-violet-500/50 text-violet-300 hover:bg-violet-500/10 transition-colors disabled:opacity-50"
+          >
+            Download .md
           </button>
           <button
             type="button"

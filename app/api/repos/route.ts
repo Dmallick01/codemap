@@ -16,6 +16,8 @@ export async function GET(req: NextRequest) {
       status: true,
       createdAt: true,
       url: true,
+      sourceType: true,
+      _count: { select: { fileNodes: true } },
       jobs: {
         orderBy: { createdAt: "desc" },
         take: 1,
@@ -30,6 +32,9 @@ export async function GET(req: NextRequest) {
     status: repo.status,
     createdAt: repo.createdAt,
     url: repo.url,
+    sourceType: repo.sourceType,
+    fileCount: repo._count.fileNodes,
+    mode: repo.sourceType === "github-lite" ? "lite" : "deep",
     latestJobId: repo.jobs[0]?.id ?? null,
   }));
 

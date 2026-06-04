@@ -105,7 +105,17 @@ function formatSourceFilesBlock(files: FetchedFile[]): string {
     const lang = f.path.includes(".")
       ? f.path.split(".").pop() ?? ""
       : "";
-    const note = f.truncated ? "\n\n_(truncated for size cap)_" : "";
+    const src =
+      f.source === "database"
+        ? " · from deep analysis DB"
+        : f.source === "github"
+          ? " · from GitHub"
+          : "";
+    const note = f.truncated
+      ? `\n\n_(truncated for size cap${src})_`
+      : src
+        ? `\n\n_(${src.trim().slice(3)})_`
+        : "";
     parts.push(
       `### \`${f.path}\`${note}\n\n\`\`\`${lang}\n${f.content}\n\`\`\`\n`,
     );
