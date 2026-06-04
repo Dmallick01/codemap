@@ -246,17 +246,26 @@ pre,
 
 .map-file-node-title {
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 15px;
+  line-height: 1.3;
 }
 
-.map-file-node-path,
-.map-file-node-summary,
-.map-file-node-framework {
+.map-file-node-path {
   color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .map-file-node-summary {
   color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.map-file-node-framework {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .map-group-label {
@@ -747,14 +756,14 @@ pre,
 }
 
 .repo-explanation-h1 {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 0.5rem;
 }
 
 .repo-explanation-h2 {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--accent);
   margin: 1rem 0 0.35rem;
@@ -769,8 +778,8 @@ pre,
 
 .repo-explanation-p,
 .repo-explanation-li {
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--text-secondary);
   margin: 0.25rem 0;
 }
@@ -832,7 +841,7 @@ pre,
 }
 
 .prompt-builder-input {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.4;
   padding: 0.6rem 0.75rem;
   border-radius: var(--radius-sm);
@@ -881,7 +890,7 @@ pre,
   min-height: 220px;
   max-height: 40vh;
   padding: 1rem;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   font-family: var(--font-geist-mono), monospace;
   border-radius: var(--radius-md);

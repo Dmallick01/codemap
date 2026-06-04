@@ -127,7 +127,7 @@ async function getGraphResponse(
       target: e.toId,
       type: "smoothstep",
       label: style.label ?? e.label ?? undefined,
-      labelStyle: { fill: "#94a3b8", fontSize: 9 },
+      labelStyle: { fill: "#94a3b8", fontSize: 11 },
       labelBgStyle: { fill: "#0f172a", fillOpacity: 0.85 },
       labelBgPadding: [4, 6] as [number, number],
       labelBgBorderRadius: 4,

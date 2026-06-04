@@ -16,13 +16,14 @@ export type LayoutFileInput = {
   modules?: unknown[];
 };
 
-const NODE_W = 240;
-const NODE_H = 92;
-const GROUP_PAD_X = 28;
-const GROUP_PAD_Y = 44;
-const GROUP_GAP_Y = 48;
-const ROLE_STEP_X = 300;
-const FILE_GAP_Y = 108;
+const NODE_W = 268;
+const NODE_H = 104;
+const GROUP_PAD_X = 20;
+const GROUP_PAD_Y = 32;
+const GROUP_GAP_Y = 28;
+const ROLE_STEP_X = 220;
+const FILE_GAP_Y = 82;
+const DEPTH_STEP_X = 16;
 
 export type GroupNodeData = {
   label: string;
@@ -95,7 +96,7 @@ export function buildSemanticLayout(
       ...bucket.files.map((f) => depth.get(f.id) ?? 0),
     );
     const baseX =
-      roleXIndex(bucket.role) * ROLE_STEP_X + maxDepthInBucket * 36;
+      roleXIndex(bucket.role) * ROLE_STEP_X + maxDepthInBucket * DEPTH_STEP_X;
 
     const baseY = roleBandY.get(bucket.role) ?? 0;
     const groupWidth = GROUP_PAD_X * 2 + NODE_W;
@@ -132,7 +133,7 @@ export function buildSemanticLayout(
         parentId: groupId,
         extent: "parent",
         position: {
-          x: GROUP_PAD_X + d * 24,
+          x: GROUP_PAD_X + d * DEPTH_STEP_X,
           y: GROUP_PAD_Y + i * FILE_GAP_Y,
         },
         data: {
