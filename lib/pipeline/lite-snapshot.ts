@@ -9,7 +9,7 @@ import { buildLiteEdges, type LiteGraphFile } from "./lite-edges";
 import { enrichImportsInMemory } from "./lite-imports";
 import { analyzeFileSemantics } from "@/lib/graph/semantic";
 import { buildSemanticLayout } from "@/lib/graph/layout";
-import { edgeStyle } from "@/lib/graph/semantic";
+import { edgeStyle, edgeLabelPresentation } from "@/lib/graph/semantic";
 import {
   pathToFileId,
   serializeSnapshot,
@@ -22,16 +22,17 @@ function toReactFlowEdges(
 ): Edge[] {
   return raw.map((e, i) => {
     const style = edgeStyle(e.type);
+    const labels = edgeLabelPresentation(e.type);
     return {
       id: `e-${i}-${e.fromId}-${e.toId}`,
       source: e.fromId,
       target: e.toId,
       type: "smoothstep",
-      label: style.label ?? e.label,
-      labelStyle: { fill: "#94a3b8", fontSize: 11 },
-      labelBgStyle: { fill: "#0f172a", fillOpacity: 0.85 },
-      labelBgPadding: [4, 6] as [number, number],
-      labelBgBorderRadius: 4,
+      label: style.label ?? e.label ?? labels.label,
+      labelStyle: labels.labelStyle,
+      labelBgStyle: labels.labelBgStyle,
+      labelBgPadding: labels.labelBgPadding,
+      labelBgBorderRadius: labels.labelBgBorderRadius,
       style: { stroke: style.stroke, strokeWidth: style.strokeWidth },
       data: { edgeType: e.type },
     };

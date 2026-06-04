@@ -16,7 +16,7 @@ export default memo(function GroupNode({ data }: GroupNodeProps) {
       }}
     >
       <div
-        className="map-group-label absolute -top-3 left-3 px-2 py-0.5 rounded-md text-[14px] font-semibold tracking-wide flex items-center gap-1.5"
+        className="map-group-label absolute -top-3 left-3 px-2 py-0.5 rounded-md text-[15px] font-semibold tracking-wide flex items-center gap-1.5"
         style={{
           border: `1px solid ${data.border}`,
           color: data.color,
@@ -31,7 +31,7 @@ export default memo(function GroupNode({ data }: GroupNodeProps) {
         <span className="map-group-label-title font-normal truncate max-w-[180px]">
           {data.label}
         </span>
-        <span className="map-group-label-sub font-mono text-[12px]">
+        <span className="map-group-label-sub font-mono text-[13px]">
           {data.fileCount} files
         </span>
       </div>

@@ -300,3 +300,43 @@ export function edgeStyle(type: string): {
       return { stroke: "#475569", strokeWidth: 1.5 };
   }
 }
+
+/** Colored translucent pills for edge labels (not flat black). */
+const EDGE_LABEL_THEME: Record<
+  string,
+  { bg: string; text: string }
+> = {
+  imports: { bg: "rgba(79, 70, 229, 0.88)", text: "#eef2ff" },
+  powers: { bg: "rgba(8, 145, 178, 0.88)", text: "#ecfeff" },
+  flows: { bg: "rgba(219, 39, 119, 0.88)", text: "#fdf2f8" },
+  defines: { bg: "rgba(124, 58, 237, 0.85)", text: "#f5f3ff" },
+  contains: { bg: "rgba(71, 85, 105, 0.85)", text: "#f1f5f9" },
+  renders: { bg: "rgba(5, 150, 105, 0.88)", text: "#ecfdf5" },
+};
+
+export function edgeLabelPresentation(edgeType: string): {
+  label?: string;
+  labelStyle: { fill: string; fontSize: number; fontWeight: number };
+  labelBgStyle: { fill: string; fillOpacity: number };
+  labelBgPadding: [number, number];
+  labelBgBorderRadius: number;
+} {
+  const base = edgeStyle(edgeType);
+  const theme =
+    EDGE_LABEL_THEME[edgeType] ??
+    ({ bg: "rgba(20, 50, 36, 0.9)", text: "#ecfdf5" } as const);
+  return {
+    label: base.label,
+    labelStyle: {
+      fill: theme.text,
+      fontSize: 14,
+      fontWeight: 600,
+    },
+    labelBgStyle: {
+      fill: theme.bg,
+      fillOpacity: 1,
+    },
+    labelBgPadding: [6, 9],
+    labelBgBorderRadius: 6,
+  };
+}

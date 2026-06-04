@@ -26,7 +26,7 @@ const EDGE_TYPES = [
 
 export default function GraphLegend() {
   return (
-    <div className="panel-blueprint p-3 text-[10px] pointer-events-auto max-w-[260px]">
+    <div className="panel-blueprint p-3 text-[13px] pointer-events-auto max-w-[280px]">
       <p className="panel-label mb-2">Blueprint legend</p>
       <p className="leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
         <span style={{ color: "var(--text-primary)" }}>X</span> = role layer ·{" "}

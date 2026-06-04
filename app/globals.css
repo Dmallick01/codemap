@@ -224,7 +224,7 @@ pre,
 /* Map file tablets — fixed size must match lib/graph/map-tile-metrics.ts */
 .map-file-node {
   width: 300px;
-  height: 132px;
+  height: 144px;
   box-sizing: border-box;
   padding: 0.5rem 0.75rem;
   background: var(--map-node-bg) !important;
@@ -252,21 +252,21 @@ pre,
 
 .map-file-node-title {
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.35;
   font-weight: 600;
 }
 
 .map-file-node-path {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.4;
 }
 
 .map-file-node-summary {
   color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 15px;
+  line-height: 1.45;
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -274,8 +274,18 @@ pre,
 
 .map-file-node-framework {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
+}
+
+.map-file-node .map-edge-label-theme {
+  font-size: 14px;
+}
+
+/* Edge connection labels (depends on / flows to / powers) */
+.react-flow__edge-text {
+  font-size: 14px !important;
+  font-weight: 600 !important;
 }
 
 .map-group-label {

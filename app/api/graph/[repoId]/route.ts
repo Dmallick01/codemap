@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { parseSnapshot } from "@/lib/graph/snapshot";
 import { analyzeFileSemantics, ROLE_META } from "@/lib/graph/semantic";
 import { buildSemanticLayout, type LayoutFileInput } from "@/lib/graph/layout";
-import { edgeStyle } from "@/lib/graph/semantic";
+import { edgeStyle, edgeLabelPresentation } from "@/lib/graph/semantic";
 import type { Edge } from "@xyflow/react";
 import { formatDbError } from "@/lib/db-errors";
 
@@ -121,16 +121,17 @@ async function getGraphResponse(
 
   const graphEdges: Edge[] = edges.map((e) => {
     const style = edgeStyle(e.type);
+    const labels = edgeLabelPresentation(e.type);
     return {
       id: e.id,
       source: e.fromId,
       target: e.toId,
       type: "smoothstep",
-      label: style.label ?? e.label ?? undefined,
-      labelStyle: { fill: "#94a3b8", fontSize: 11 },
-      labelBgStyle: { fill: "#0f172a", fillOpacity: 0.85 },
-      labelBgPadding: [4, 6] as [number, number],
-      labelBgBorderRadius: 4,
+      label: style.label ?? e.label ?? labels.label,
+      labelStyle: labels.labelStyle,
+      labelBgStyle: labels.labelBgStyle,
+      labelBgPadding: labels.labelBgPadding,
+      labelBgBorderRadius: labels.labelBgBorderRadius,
       style: {
         stroke: style.stroke,
         strokeWidth: style.strokeWidth,

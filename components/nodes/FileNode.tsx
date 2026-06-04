@@ -99,7 +99,7 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
 
       <div className="flex items-center gap-1 mb-1 shrink-0">
         <span
-          className="text-[11px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
+          className="text-[12px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
           style={{
             color: roleMeta.color,
             background: roleMeta.bg,
@@ -109,7 +109,7 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
           {data.roleLabel ?? roleMeta.label}
         </span>
         <span
-          className={`text-[11px] font-mono px-1 py-0.5 rounded border ${langStyle.badge}`}
+          className={`text-[12px] font-mono px-1 py-0.5 rounded border ${langStyle.badge}`}
         >
           {extLabel}
         </span>

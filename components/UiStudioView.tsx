@@ -29,7 +29,7 @@ import {
   filterUiStudioFiles,
 } from "@/lib/graph/ui-layout";
 import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
-import { edgeStyle } from "@/lib/graph/semantic";
+import { edgeStyle, edgeLabelPresentation } from "@/lib/graph/semantic";
 import type { FileNodeData } from "@/lib/store/graph";
 import type { LayoutFileInput } from "@/lib/graph/layout";
 
@@ -39,10 +39,16 @@ function styleEdges(eds: Edge[], focusId: string | null): Edge[] {
   return eds.map((e) => {
     const edgeType = (e.data as { edgeType?: string })?.edgeType ?? "imports";
     const base = edgeStyle(edgeType);
+    const labels = edgeLabelPresentation(edgeType);
     const connected =
       focusId && (e.source === focusId || e.target === focusId);
     return {
       ...e,
+      label: e.label ?? labels.label,
+      labelStyle: labels.labelStyle,
+      labelBgStyle: labels.labelBgStyle,
+      labelBgPadding: labels.labelBgPadding,
+      labelBgBorderRadius: labels.labelBgBorderRadius,
       animated: !!connected,
       style: {
         stroke: base.stroke,

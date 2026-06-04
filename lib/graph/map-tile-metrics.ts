@@ -3,7 +3,7 @@
  * Layout positions, group bounds, and FileNode CSS must stay in sync.
  */
 export const MAP_TILE_WIDTH = 300;
-export const MAP_TILE_HEIGHT = 132;
+export const MAP_TILE_HEIGHT = 144;
 /** Gap between stacked file rows inside a group */
 export const MAP_TILE_ROW_GAP = 8;
 export const MAP_TILE_ROW_STRIDE = MAP_TILE_HEIGHT + MAP_TILE_ROW_GAP;

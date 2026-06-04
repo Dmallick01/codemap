@@ -43,7 +43,7 @@ import RepoOverviewPanel, {
 import { useGraphExplorer } from "@/hooks/useGraphExplorer";
 import { useGraphStore } from "@/lib/store/graph";
 import type { FileNodeData } from "@/lib/store/graph";
-import { ROLE_META, type ArchRole, edgeStyle } from "@/lib/graph/semantic";
+import { ROLE_META, type ArchRole, edgeStyle, edgeLabelPresentation } from "@/lib/graph/semantic";
 import { relayoutArchitectureNodes } from "@/lib/graph/relayout-graph";
 
 const nodeTypes = {
@@ -56,10 +56,16 @@ function styleEdges(eds: Edge[], focusId: string | null): Edge[] {
     const edgeType =
       (e.data as { edgeType?: string })?.edgeType ?? "imports";
     const base = edgeStyle(edgeType);
+    const labels = edgeLabelPresentation(edgeType);
     const connected =
       focusId && (e.source === focusId || e.target === focusId);
     return {
       ...e,
+      label: e.label ?? labels.label,
+      labelStyle: labels.labelStyle,
+      labelBgStyle: labels.labelBgStyle,
+      labelBgPadding: labels.labelBgPadding,
+      labelBgBorderRadius: labels.labelBgBorderRadius,
       animated: !!connected,
       style: {
         stroke: base.stroke,
