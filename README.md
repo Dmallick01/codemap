@@ -2,7 +2,7 @@
 
 [![Live demo](https://img.shields.io/badge/demo-Vercel-black?style=flat-square)](https://codemap-mocw.vercel.app)
 
-**One line:** AI-powered code deconstructor — ingest a public GitHub repo, explore files with keyboard navigation (hf-viewer style), and inspect an interactive dependency graph.
+**One line:** Understand any public GitHub repo in seconds — **CodeMap Lite** maps structure and meaning without downloading the whole project. Optional **deep** mode adds full parse + AI.
 
 **Live demo:** [codemap-mocw.vercel.app](https://codemap-mocw.vercel.app) · Repo: [github.com/Dmallick01/codemap](https://github.com/Dmallick01/codemap)
 
@@ -41,7 +41,9 @@ npx prisma migrate dev
 npm run dev
 ```
 
-Open http://localhost:3000 → paste `https://github.com/vercel/next.js` → **Analyze**.
+Open http://localhost:3000 → paste `https://github.com/vercel/next.js` → **Map repo** (Lite, default).
+
+Deep mode: `POST /api/ingest` with `{ "url": "...", "mode": "deep" }`.
 
 ## Explorer shortcuts
 

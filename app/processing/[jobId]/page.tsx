@@ -15,38 +15,47 @@ interface JobData {
     name: string;
     status: string;
     errorMsg: string | null;
+    sourceType?: string;
   };
 }
 
-const STEPS = ["fetching", "parsing", "analyzing", "building", "done"] as const;
+const DEEP_STEPS = ["fetching", "parsing", "analyzing", "building", "done"];
+const LITE_STEPS = ["fetching", "mapping", "building", "done"];
 
 const STEP_LABELS: Record<string, string> = {
-  fetching: "Fetching",
+  fetching: "GitHub API",
+  mapping: "Map structure",
   parsing: "Parsing",
   analyzing: "Analyzing",
-  building: "Building Graph",
+  building: "Build map",
   done: "Complete",
   error: "Error",
 };
 
-function getStepIndex(step: string): number {
-  const idx = STEPS.indexOf(step as (typeof STEPS)[number]);
+function getSteps(sourceType?: string) {
+  return sourceType === "github-lite" ? LITE_STEPS : DEEP_STEPS;
+}
+
+function getStepIndex(step: string, sourceType?: string): number {
+  const steps = [...getSteps(sourceType)];
+  const idx = steps.indexOf(step);
   return idx === -1 ? -1 : idx;
 }
 
 function LoadingSkeleton() {
+  const steps = LITE_STEPS;
   return (
     <div className="animate-pulse mt-8">
       <div className="h-7 w-48 bg-gray-800 rounded mb-2" />
       <div className="h-4 w-32 bg-gray-800/60 rounded mb-10" />
       <div className="flex items-center mb-10">
-        {STEPS.map((step, i) => (
+        {steps.map((step, i) => (
           <div key={step} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center">
               <div className="w-10 h-10 rounded-full bg-gray-800 border-2 border-gray-700" />
               <div className="mt-2 h-3 w-14 bg-gray-800 rounded" />
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div className="flex-1 h-0.5 mx-2 mt-[-20px] bg-gray-800" />
             )}
           </div>
@@ -96,7 +105,9 @@ export default function ProcessingPage() {
     }
   }, [job?.step]);
 
-  const stepIndex = job ? getStepIndex(job.step) : -1;
+  const steps = job ? getSteps(job.repo.sourceType) : LITE_STEPS;
+  const stepIndex = job ? getStepIndex(job.step, job.repo.sourceType) : -1;
+  const isLite = job?.repo.sourceType === "github-lite";
   const isError = job?.step === "error";
   const isDone = job?.step === "done";
   const progressPct =
@@ -123,7 +134,7 @@ export default function ProcessingPage() {
 
             {/* Step indicators — stack vertically on mobile */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center mb-10 gap-4 sm:gap-0">
-              {STEPS.map((step, i) => {
+              {steps.map((step, i) => {
                 const isActive = stepIndex === i;
                 const isComplete = stepIndex > i;
                 const isFailed = isError && i === 0 && stepIndex === -1;
@@ -162,7 +173,7 @@ export default function ProcessingPage() {
                       </span>
                     </div>
                     {/* Connector — horizontal on sm+, hidden on mobile */}
-                    {i < STEPS.length - 1 && (
+                    {i < steps.length - 1 && (
                       <div
                         className={`hidden sm:block flex-1 h-0.5 mx-2 mt-[-20px] ${
                           isComplete ? "bg-emerald-600" : "bg-gray-800"
@@ -206,10 +217,12 @@ export default function ProcessingPage() {
                   </svg>
                 </div>
                 <h2 className="text-xl font-bold text-emerald-400 mb-2">
-                  Analysis Complete
+                  {isLite ? "Lite map ready" : "Analysis complete"}
                 </h2>
                 <p className="text-gray-400 mb-6">
-                  Your code map is ready to explore.
+                  {isLite
+                    ? "See what this repo is and how its folders connect."
+                    : "Your code map is ready to explore."}
                 </p>
                 <button
                   onClick={() => router.push(`/analyze/${job.repo.id}`)}

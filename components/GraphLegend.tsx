@@ -3,11 +3,11 @@
 import { ROLE_META, type ArchRole } from "@/lib/graph/semantic";
 import { edgeStyle } from "@/lib/graph/semantic";
 
-const EDGE_TYPES = ["imports", "powers", "defines"] as const;
+const EDGE_TYPES = ["flows", "imports", "powers", "defines", "contains"] as const;
 
 export default function GraphLegend() {
   return (
-    <div className="absolute bottom-4 left-4 z-10 max-w-[280px] rounded-lg border border-gray-800 bg-gray-950/95 backdrop-blur-sm p-3 shadow-xl text-[10px]">
+    <div className="rounded-lg border border-gray-800 bg-gray-950/95 backdrop-blur-sm p-3 shadow-xl text-[10px]">
       <p className="text-[9px] uppercase tracking-widest text-gray-500 font-semibold mb-2">
         How to read this map
       </p>

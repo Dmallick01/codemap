@@ -290,6 +290,10 @@ export function edgeStyle(type: string): {
       return { stroke: "#22d3ee", strokeWidth: 2, label: "powers" };
     case "defines":
       return { stroke: "#a78bfa", strokeWidth: 1.5, label: "defines" };
+    case "flows":
+      return { stroke: "#f472b6", strokeWidth: 2, label: "flows to" };
+    case "contains":
+      return { stroke: "#64748b", strokeWidth: 1, label: "contains" };
     default:
       return { stroke: "#475569", strokeWidth: 1.5 };
   }

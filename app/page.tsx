@@ -39,14 +39,14 @@ export default function Home() {
       .finally(() => setReposLoading(false));
   }, []);
 
-  async function startIngest(targetUrl: string) {
+  async function startIngest(targetUrl: string, mode: "lite" | "deep" = "lite") {
     setError("");
     setLoading(true);
     try {
       const res = await fetch("/api/ingest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl }),
+        body: JSON.stringify({ url: targetUrl, mode }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -88,10 +88,13 @@ export default function Home() {
           <h1 className="text-5xl font-bold tracking-tight mb-4">
             Code<span className="text-blue-400">Map</span>
           </h1>
+          <p className="text-sm text-emerald-400/90 font-medium mb-2">
+            CodeMap Lite — seconds, not minutes
+          </p>
           <p className="text-lg text-gray-400 max-w-lg mx-auto">
-            Learn how a GitHub project works — meaningful layers (entry, API,
-            UI, pipeline) connected on a readable 2D map with color-coded
-            dependencies, folder groups, and keyboard exploration.
+            Paste a GitHub URL to see what the project is, how folders relate,
+            and where to start reading. Uses the GitHub API only — no zip
+            download, no AI, no full-repo parsing.
           </p>
           <a
             href="https://github.com/Dmallick01/codemap"
@@ -119,7 +122,18 @@ export default function Home() {
               disabled={loading || !url.trim()}
               className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
             >
-              {loading ? "Starting…" : "Analyze"}
+              {loading ? "Starting…" : "Map repo"}
+            </button>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
+            <span>Default: Lite (fast)</span>
+            <button
+              type="button"
+              disabled={loading || !url.trim()}
+              onClick={() => startIngest(url, "deep")}
+              className="text-gray-400 hover:text-gray-200 underline disabled:opacity-50"
+            >
+              Deep analysis instead (download + parse)
             </button>
           </div>
           {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
@@ -152,14 +166,13 @@ export default function Home() {
             Explorer workflow
           </h2>
           <ol className="list-decimal list-inside space-y-1.5">
-            <li>Paste a GitHub URL and run the ingest pipeline</li>
-            <li>Open the graph — files are sorted for sequential browsing</li>
+            <li>GitHub returns repo info + file tree (paths only)</li>
+            <li>We pick ~30 anchor files (README, routes, main folders)</li>
+            <li>Colored map shows roles and how layers connect</li>
             <li>
               Press <kbd className="text-gray-300 px-1">N</kbd> /{" "}
-              <kbd className="text-gray-300 px-1">P</kbd> to move between files
-              (like a sample viewer)
+              <kbd className="text-gray-300 px-1">P</kbd> to tour anchor files
             </li>
-            <li>Progress auto-saves in your browser — resume anytime</li>
           </ol>
         </div>
 

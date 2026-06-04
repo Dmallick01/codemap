@@ -22,6 +22,9 @@ import GroupNode from "@/components/nodes/GroupNode";
 import NodeDetail from "@/components/nodes/NodeDetail";
 import ExplorerToolbar from "@/components/ExplorerToolbar";
 import GraphLegend from "@/components/GraphLegend";
+import RepoOverviewPanel, {
+  type RepoOverviewMeta,
+} from "@/components/RepoOverviewPanel";
 import { useGraphExplorer } from "@/hooks/useGraphExplorer";
 import { useGraphStore } from "@/lib/store/graph";
 import type { FileNodeData } from "@/lib/store/graph";
@@ -38,7 +41,13 @@ type GraphResponse = {
   status: string;
   nodes: Node[];
   edges: Edge[];
-  meta?: { fileCount: number; edgeCount: number; layout: string };
+  meta?: {
+    fileCount: number;
+    edgeCount: number;
+    layout: string;
+    mode?: string;
+    overview?: RepoOverviewMeta | null;
+  };
   error?: string;
 };
 
@@ -117,6 +126,8 @@ export default function AnalyzePage() {
   const [repoStatus, setRepoStatus] = useState("");
   const [fileCount, setFileCount] = useState(0);
   const [reanalyzing, setReanalyzing] = useState(false);
+  const [mapMode, setMapMode] = useState<string>("lite");
+  const [overview, setOverview] = useState<RepoOverviewMeta | null>(null);
 
   const { selectedNode, setSelectedNode } = useGraphStore();
 
@@ -199,6 +210,8 @@ export default function AnalyzePage() {
           data.meta?.fileCount ??
             data.nodes.filter((n) => n.type === "fileNode").length,
         );
+        setMapMode(data.meta?.mode ?? "lite");
+        setOverview(data.meta?.overview ?? null);
 
         setNodes(data.nodes || []);
         setEdges(styleEdges(data.edges || [], null));
@@ -244,7 +257,7 @@ export default function AnalyzePage() {
       const res = await fetch("/api/ingest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: repoUrl }),
+        body: JSON.stringify({ url: repoUrl, mode: "lite" }),
       });
       const data = await res.json();
       if (res.ok && data.jobId) {
@@ -358,7 +371,14 @@ export default function AnalyzePage() {
             />
           </ReactFlow>
 
-          <GraphLegend />
+          <RepoOverviewPanel
+            repoName={repoName}
+            overview={overview}
+            mode={mapMode}
+          />
+          <div className="absolute bottom-4 right-4 z-10 max-w-[260px]">
+            <GraphLegend />
+          </div>
           {selectedNode && <NodeDetail />}
           <ExplorerToolbar
             index={explorer.index}

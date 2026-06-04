@@ -98,6 +98,9 @@ export async function GET(
 
   const { nodes } = buildSemanticLayout(layoutInputs, graphEdges);
 
+  const isLite = repo.sourceType === "github-lite";
+  const overview = extractLiteOverview(fileNodes);
+
   const fileCount = fileNodes.length;
   const rolesPresent = [
     ...new Set(
@@ -123,6 +126,35 @@ export async function GET(
       edgeCount: edges.length,
       roles: rolesPresent,
       layout: "semantic-2d",
+      mode: isLite ? "lite" : "deep",
+      overview,
     },
   });
+}
+
+function extractLiteOverview(
+  fileNodes: { path: string; summary: string | null }[],
+) {
+  for (const file of fileNodes) {
+    if (!/^readme/i.test(file.path.split("/").pop() ?? "")) continue;
+    try {
+      const parsed = JSON.parse(file.summary || "{}");
+      if (parsed.lite || parsed.readmePreview || parsed.description) {
+        return {
+          lite: !!parsed.lite,
+          description: parsed.description ?? null,
+          readmePreview: parsed.readmePreview ?? null,
+          summary: parsed.summary ?? null,
+          language: parsed.language ?? null,
+          stars: parsed.stars,
+          totalPaths: parsed.totalPaths,
+          anchorCount: parsed.anchorCount,
+          topFolders: parsed.topFolders,
+        };
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
 }

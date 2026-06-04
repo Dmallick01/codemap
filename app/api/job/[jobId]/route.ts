@@ -11,7 +11,13 @@ export async function GET(
     where: { id: jobId },
     include: {
       repo: {
-        select: { id: true, name: true, status: true, errorMsg: true },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          errorMsg: true,
+          sourceType: true,
+        },
       },
     },
   });
