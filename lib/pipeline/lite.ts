@@ -6,6 +6,7 @@ import {
 } from "@/lib/services/github-lite";
 import { selectAnchorPaths, folderStats } from "./lite-paths";
 import { buildLiteStructuralGraph } from "./lite-graph";
+import { enrichLiteImports } from "./lite-imports";
 import { analyzeFileSemantics } from "@/lib/graph/semantic";
 
 export async function runLitePipeline(
@@ -97,6 +98,21 @@ export async function runLitePipeline(
         log: `Placing ${anchors.length} anchors into architecture map…`,
       },
     });
+
+    if (url) {
+      await prisma.job.update({
+        where: { id: jobId },
+        data: {
+          step: "building",
+          log: "Resolving UI/route imports for richer connections…",
+        },
+      });
+      await enrichLiteImports(
+        repoId,
+        url,
+        anchors.map((a) => a.path),
+      );
+    }
 
     await buildLiteStructuralGraph(repoId, jobId);
   } catch (err) {

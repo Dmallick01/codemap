@@ -1,7 +1,7 @@
 import { Octokit } from "@octokit/rest";
 import { parseGitHubUrl } from "@/lib/services/github";
 
-const MAX_TREE_PATHS = parseInt(process.env.MAX_LITE_TREE_PATHS || "400", 10);
+const MAX_TREE_PATHS = parseInt(process.env.MAX_LITE_TREE_PATHS || "800", 10);
 
 const IGNORED_DIRS = new Set([
   "node_modules",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useCallback, useState } from "react";
+import Link from "next/link";
 import {
   ReactFlow,
   useNodesState,
@@ -283,9 +284,20 @@ function AnalyzeGraphInner({
   return (
     <div className="h-[calc(100vh-3rem)] flex flex-col bg-gray-950 text-white overflow-hidden">
       <header className="flex-none min-h-12 flex flex-wrap items-center gap-3 px-4 py-2 border-b border-gray-800 bg-gray-950/90 backdrop-blur-sm z-20">
-        <h1 className="text-xs font-semibold text-gray-300 truncate max-w-[36ch]">
+        <h1 className="text-xs font-semibold text-gray-300 truncate max-w-[28ch]">
           {repoName}
         </h1>
+        <nav className="flex items-center gap-1 text-[10px]">
+          <span className="px-2 py-1 rounded bg-gray-800 text-gray-300 font-medium">
+            Architecture
+          </span>
+          <Link
+            href={`/analyze/${repoId}/ui`}
+            className="px-2 py-1 rounded border border-sky-800/50 text-sky-400/90 hover:bg-sky-500/10 hover:text-sky-300 transition-colors"
+          >
+            UI Studio →
+          </Link>
+        </nav>
         <div className="flex-1" />
         <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600">
           <span>

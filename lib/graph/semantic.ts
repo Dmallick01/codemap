@@ -294,6 +294,8 @@ export function edgeStyle(type: string): {
       return { stroke: "#f472b6", strokeWidth: 2, label: "flows to" };
     case "contains":
       return { stroke: "#64748b", strokeWidth: 1, label: "contains" };
+    case "renders":
+      return { stroke: "#38bdf8", strokeWidth: 2, label: "renders" };
     default:
       return { stroke: "#475569", strokeWidth: 1.5 };
   }

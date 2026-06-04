@@ -3,7 +3,14 @@
 import { ROLE_META, type ArchRole } from "@/lib/graph/semantic";
 import { edgeStyle } from "@/lib/graph/semantic";
 
-const EDGE_TYPES = ["flows", "imports", "powers", "defines", "contains"] as const;
+const EDGE_TYPES = [
+  "flows",
+  "imports",
+  "renders",
+  "powers",
+  "defines",
+  "contains",
+] as const;
 
 export default function GraphLegend() {
   return (

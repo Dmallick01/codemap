@@ -1,7 +1,9 @@
-import { analyzeFileSemantics } from "@/lib/graph/semantic";
+import { analyzeFileSemantics, inferArchRole } from "@/lib/graph/semantic";
 import { getLanguageForFile } from "@/lib/services/tree-sitter";
 
-const MAX_ANCHOR_FILES = parseInt(process.env.MAX_LITE_FILES || "36", 10);
+const MAX_ANCHOR_FILES = parseInt(process.env.MAX_LITE_FILES || "64", 10);
+const MAX_PER_FOLDER = parseInt(process.env.MAX_LITE_PER_FOLDER || "4", 10);
+const MAX_UI_FILES = parseInt(process.env.MAX_LITE_UI_FILES || "24", 10);
 
 const ANCHOR_BASENAMES = new Set([
   "readme.md",
@@ -16,6 +18,8 @@ const ANCHOR_BASENAMES = new Set([
   "next.config.ts",
   "next.config.js",
   "prisma.schema",
+  "globals.css",
+  "global.css",
 ]);
 
 function basename(path: string): string {
@@ -31,6 +35,8 @@ function isAnchorBasename(path: string): boolean {
   if (/^route\.(tsx|js|ts)$/.test(base)) return true;
   if (/^index\.(tsx|jsx|ts|js)$/.test(base)) return true;
   if (/^main\.(tsx|ts|js|py|go|rs)$/.test(base)) return true;
+  if (/loading\.(tsx|jsx)$/.test(base)) return true;
+  if (/error\.(tsx|jsx)$/.test(base)) return true;
   return false;
 }
 
@@ -50,14 +56,20 @@ export type LiteAnchor = {
 };
 
 /**
- * Pick a small set of paths that explain the repo — not the full tree.
+ * Pick anchors that explain the repo — expanded for detailed maps.
  */
 export function selectAnchorPaths(allPaths: string[]): LiteAnchor[] {
   const chosen = new Set<string>();
   const anchors: LiteAnchor[] = [];
+  let uiCount = 0;
 
   function add(path: string, isReadme = false) {
     if (chosen.has(path) || anchors.length >= MAX_ANCHOR_FILES) return;
+    const role = inferArchRole(path);
+    if (role === "ui") {
+      if (uiCount >= MAX_UI_FILES) return;
+      uiCount++;
+    }
     chosen.add(path);
     const sem = analyzeFileSemantics(path);
     anchors.push({
@@ -78,6 +90,22 @@ export function selectAnchorPaths(allPaths: string[]): LiteAnchor[] {
     if (isAnchorBasename(p)) add(p);
   }
 
+  // All UI-related TSX/JSX (components, app routes with UI)
+  const uiCandidates = allPaths
+    .filter(
+      (p) =>
+        /\.(tsx|jsx)$/i.test(p) &&
+        (inferArchRole(p) === "ui" ||
+          inferArchRole(p) === "entry" ||
+          inferArchRole(p) === "routing"),
+    )
+    .sort((a, b) => a.localeCompare(b));
+
+  for (const p of uiCandidates) {
+    if (anchors.length >= MAX_ANCHOR_FILES || uiCount >= MAX_UI_FILES) break;
+    add(p);
+  }
+
   const byFolder = new Map<string, string[]>();
   for (const p of allPaths) {
     const fk = folderKey(p);
@@ -91,12 +119,29 @@ export function selectAnchorPaths(allPaths: string[]): LiteAnchor[] {
 
   for (const fk of significantFolders) {
     if (anchors.length >= MAX_ANCHOR_FILES) break;
-    const files = byFolder.get(fk)!.sort((a, b) => a.localeCompare(b));
-    const pick =
-      files.find((f) => isAnchorBasename(f)) ??
-      files.find((f) => /\.(ts|tsx|js|jsx|py|go|rs)$/.test(f)) ??
-      files[0];
-    if (pick) add(pick);
+    const files = byFolder
+      .get(fk)!
+      .filter((f) => /\.(ts|tsx|js|jsx|py|go|rs|css)$/i.test(f))
+      .sort((a, b) => {
+        const aAnchor = isAnchorBasename(a) ? 0 : 1;
+        const bAnchor = isAnchorBasename(b) ? 0 : 1;
+        if (aAnchor !== bAnchor) return aAnchor - bAnchor;
+        return a.localeCompare(b);
+      });
+
+    let picked = 0;
+    for (const f of files) {
+      if (picked >= MAX_PER_FOLDER) break;
+      add(f);
+      picked++;
+    }
+  }
+
+  // Hooks & styles used by frontend
+  for (const p of allPaths) {
+    if (anchors.length >= MAX_ANCHOR_FILES) break;
+    if (/(^|\/)hooks\/.*\.(ts|tsx)$/i.test(p)) add(p);
+    if (/\.module\.(css|scss)$/i.test(p)) add(p);
   }
 
   return anchors.sort((a, b) => a.path.localeCompare(b.path));

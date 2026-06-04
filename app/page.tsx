@@ -173,7 +173,8 @@ export default function Home() {
           </h2>
           <ol className="list-decimal list-inside space-y-1.5">
             <li>GitHub returns repo info + file tree (paths only)</li>
-            <li>We pick ~30 anchor files (README, routes, main folders)</li>
+            <li>We pick ~60 anchor files (routes, components, APIs, folders)</li>
+            <li>Import-aware connections (UI → API, co-located components)</li>
             <li>Colored map shows roles and how layers connect</li>
             <li>
               Tour: <kbd className="text-gray-300 px-1">N</kbd> /{" "}
@@ -182,6 +183,10 @@ export default function Home() {
             <li>
               <kbd className="text-gray-300 px-1">Shift</kbd>+click to bundle files;
               export repurposing prompt (+ optional source from GitHub)
+            </li>
+            <li>
+              <strong className="text-gray-300">UI Studio</strong> — frontend-only
+              map + copy UI design prompt for your stack
             </li>
           </ol>
         </div>
