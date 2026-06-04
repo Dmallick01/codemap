@@ -32,6 +32,7 @@ import {
 import type { ArchRole } from "@/lib/graph/semantic";
 import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
 import { useMapSpacing } from "@/hooks/useMapSpacing";
+import { usePromptDockLayout } from "@/hooks/usePromptDockLayout";
 import MapSpacingControls from "@/components/MapSpacingControls";
 import { edgeStyle, edgeLabelPresentation } from "@/lib/graph/semantic";
 import type { FileNodeData } from "@/lib/store/graph";
@@ -238,6 +239,8 @@ function UiStudioInner({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [focusPromptInput]);
 
+  const dock = usePromptDockLayout(promptExpanded, chromeOpen, 48);
+
   if (!uiFiles.length) {
     return (
       <div
@@ -254,8 +257,11 @@ function UiStudioInner({
 
   return (
     <div
-      className="relative overflow-hidden"
-      style={{ height: "calc(100vh - var(--header-h))" }}
+      className="map-view-root relative overflow-hidden"
+      style={{
+        height: "calc(100vh - var(--header-h))",
+        ["--map-dock-reserve" as string]: `${dock.reservePx}px`,
+      }}
     >
       <ReactFlow
         nodes={displayNodes}
@@ -276,7 +282,10 @@ function UiStudioInner({
         proOptions={{ hideAttribution: true }}
       >
         {!chromeOpen && <Controls position="bottom-left" />}
-        <div className="absolute z-20 left-3 bottom-14 pointer-events-none">
+        <div
+          className="absolute z-20 left-3 pointer-events-none"
+          style={{ bottom: dock.reservePx + 12 }}
+        >
           <MapSpacingControls
             scale={spacingScale}
             onChange={setSpacingScale}
@@ -288,7 +297,7 @@ function UiStudioInner({
           nodeColor={() => "var(--role-ui)"}
           maskColor="var(--minimap-mask)"
           style={{
-            marginBottom: (chromeOpen ? 72 : 0) + (promptExpanded ? 240 : 56) + 12,
+            marginBottom: dock.reservePx + 12,
             marginRight: 12,
           }}
         />
@@ -392,7 +401,7 @@ function UiStudioInner({
                 ?.path ?? null
             : null
         }
-        dockOffsetPx={chromeOpen ? 48 : 0}
+        dockOffsetPx={dock.promptBottomPx}
       />
 
       {chromeOpen && (

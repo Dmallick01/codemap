@@ -37,6 +37,7 @@ import type {
 import { useBundleSelection } from "@/hooks/useBundleSelection";
 import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
 import { useMapSpacing } from "@/hooks/useMapSpacing";
+import { usePromptDockLayout } from "@/hooks/usePromptDockLayout";
 import MapSpacingControls from "@/components/MapSpacingControls";
 import GraphLegend from "@/components/GraphLegend";
 import RepoOverviewPanel, {
@@ -360,16 +361,15 @@ function AnalyzeGraphInner({
     [repoName, repoUrl, mapMode, nodes, edges, elementPromptNodeIds],
   );
 
-  const promptDockBottom = useMemo(() => {
-    const chromeH = chromeOpen ? 220 : 0;
-    const promptH = promptExpanded ? 240 : 56;
-    return chromeH + promptH + 12;
-  }, [chromeOpen, promptExpanded]);
+  const dock = usePromptDockLayout(promptExpanded, chromeOpen);
 
   return (
     <div
-      className="relative overflow-hidden"
-      style={{ height: "calc(100vh - var(--header-h))" }}
+      className="map-view-root relative overflow-hidden"
+      style={{
+        height: "calc(100vh - var(--header-h))",
+        ["--map-dock-reserve" as string]: `${dock.reservePx}px`,
+      }}
     >
       <ReactFlow
         nodes={displayNodes}
@@ -391,7 +391,7 @@ function AnalyzeGraphInner({
         {!chromeOpen && <Controls position="bottom-left" />}
         <div
           className="absolute z-20 pointer-events-none"
-          style={{ left: 12, bottom: chromeOpen ? 240 : 56 }}
+          style={{ left: 12, bottom: dock.reservePx + 12 }}
         >
           <MapSpacingControls
             scale={spacingScale}
@@ -404,7 +404,7 @@ function AnalyzeGraphInner({
           nodeColor={minimapColor}
           maskColor="var(--minimap-mask)"
           style={{
-            marginBottom: promptDockBottom,
+            marginBottom: dock.reservePx + 12,
             marginRight: 12,
           }}
         />
@@ -437,7 +437,10 @@ function AnalyzeGraphInner({
       />
 
       {!chromeOpen && (
-        <div className="absolute bottom-3 right-3 z-20 pointer-events-auto">
+        <div
+          className="absolute right-3 z-20 pointer-events-auto"
+          style={{ bottom: dock.reservePx + 12 }}
+        >
           <GraphLegend />
         </div>
       )}
@@ -577,7 +580,7 @@ function AnalyzeGraphInner({
         onToggleExpanded={() => setPromptExpanded((v) => !v)}
         currentFilePath={selectedFilePath}
         overview={overview}
-        dockOffsetPx={chromeOpen ? 220 : 0}
+        dockOffsetPx={dock.promptBottomPx}
       />
 
       <ExportPromptSheet

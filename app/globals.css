@@ -727,6 +727,23 @@ pre,
   font-size: 13px;
 }
 
+/* Map canvas leaves room for bottom prompt + optional explorer chrome */
+.map-view-root {
+  --map-dock-reserve: 0px;
+}
+
+.map-view-root .react-flow {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: var(--map-dock-reserve) !important;
+  height: auto !important;
+}
+
+.map-view-root .react-flow__controls {
+  margin-bottom: calc(var(--map-dock-reserve) + 8px);
+}
+
 /* Prompt builder — core product surface */
 .prompt-builder {
   position: absolute;
@@ -739,19 +756,29 @@ pre,
 }
 
 .prompt-builder-collapsed {
-  bottom: 0;
+  max-height: 76px;
+  overflow: hidden;
 }
 
 .prompt-builder-expanded {
-  bottom: 0;
-  max-height: min(42vh, 420px);
+  max-height: min(38vh, 340px);
   display: flex;
   flex-direction: column;
 }
 
 .prompt-builder-bar {
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.75rem 0.35rem;
   flex-shrink: 0;
+}
+
+.prompt-mode-select {
+  font-size: 12px;
+  max-width: 9.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
 }
 
 .prompt-mode-tab {
@@ -861,9 +888,9 @@ pre,
 }
 
 .prompt-builder-input {
-  font-size: 16px;
-  line-height: 1.4;
-  padding: 0.6rem 0.75rem;
+  font-size: 15px;
+  line-height: 1.35;
+  padding: 0.45rem 0.65rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
   background: var(--bg-elevated);

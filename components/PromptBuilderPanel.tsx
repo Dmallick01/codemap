@@ -236,23 +236,44 @@ export default function PromptBuilderPanel({
       style={{ bottom: dockOffsetPx }}
     >
       <div className="prompt-builder-bar">
-        <div className="flex flex-wrap items-center gap-2 mb-1">
-          {(Object.keys(PROMPT_MODE_META) as PromptMode[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => {
+        {expanded && (
+          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+            {(Object.keys(PROMPT_MODE_META) as PromptMode[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => {
+                  setMode(m);
+                  setOutputView("idle");
+                  if (m === "explain-repo") setUserQuestion((q) => q || QUICK_EXPLAIN);
+                }}
+                className={`prompt-mode-tab ${mode === m ? "prompt-mode-tab-active" : ""}`}
+              >
+                {m === "explain-repo" ? "Explain GitHub" : PROMPT_MODE_META[m].label}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2 items-center flex-wrap sm:flex-nowrap">
+          {!expanded && (
+            <select
+              aria-label="Prompt mode"
+              value={mode}
+              onChange={(e) => {
+                const m = e.target.value as PromptMode;
                 setMode(m);
                 setOutputView("idle");
                 if (m === "explain-repo") setUserQuestion((q) => q || QUICK_EXPLAIN);
               }}
-              className={`prompt-mode-tab ${mode === m ? "prompt-mode-tab-active" : ""}`}
+              className="prompt-mode-select shrink-0"
             >
-              {m === "explain-repo" ? "Explain GitHub" : PROMPT_MODE_META[m].label}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-2 items-center">
+              {(Object.keys(PROMPT_MODE_META) as PromptMode[]).map((m) => (
+                <option key={m} value={m}>
+                  {m === "explain-repo" ? "Explain GitHub" : PROMPT_MODE_META[m].label}
+                </option>
+              ))}
+            </select>
+          )}
           <input
             id="prompt-ask"
             type="text"
@@ -298,7 +319,7 @@ export default function PromptBuilderPanel({
             {expanded ? "▾" : "▴"}
           </button>
         </div>
-        <p className="prompt-builder-hint mt-1 truncate">
+        <p className={`prompt-builder-hint truncate ${expanded ? "mt-1" : "mt-0.5 w-full basis-full"}`}>
           <strong>{repoName}</strong>
           {selectedPaths[0] ? (
             <>
