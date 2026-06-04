@@ -23,6 +23,13 @@ export type FileNodeData = {
   language?: string;
   summary?: string;
   modules?: ModuleData[];
+  role?: string;
+  roleLabel?: string;
+  group?: string;
+  groupLabel?: string;
+  framework?: string;
+  frameworkLabel?: string;
+  purpose?: string;
 };
 
 export type SelectedNode = {

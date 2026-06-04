@@ -14,7 +14,9 @@ function nodePath(node: Node): string {
 }
 
 export function sortFileNodes(nodes: Node[]): Node[] {
-  return [...nodes].sort((a, b) => nodePath(a).localeCompare(nodePath(b)));
+  return [...nodes]
+    .filter((n) => n.type === "fileNode")
+    .sort((a, b) => nodePath(a).localeCompare(nodePath(b)));
 }
 
 export function useGraphExplorer(

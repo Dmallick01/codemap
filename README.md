@@ -24,6 +24,7 @@ flowchart LR
 | **Parse** | Extract modules, functions, imports (WASM tree-sitter) |
 | **Analyze** | Optional summaries via Anthropic, OpenAI, or Ollama |
 | **Explore** | `N` / `P` walk files; progress saved in `localStorage` |
+| **Architecture map** | Files grouped by role (entry, API, UI, pipeline…) on a 2D layout with colored dependency edges |
 
 Inspired by public dataset viewers like [hf-viewer](https://github.com/SJCaldwell/hf-viewer) — sequential sample browsing with auto-save and resume, applied to **code files** instead of Hugging Face rows.
 

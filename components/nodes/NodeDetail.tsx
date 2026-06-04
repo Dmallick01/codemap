@@ -125,6 +125,10 @@ function FileDetail({ data }: { data: FileNodeData }) {
       </div>
 
       <DetailRow label="Path" value={data.path} mono />
+      <DetailRow label="Role in project" value={data.roleLabel} />
+      <DetailRow label="Folder group" value={data.groupLabel} />
+      <DetailRow label="Framework" value={data.frameworkLabel} />
+      <DetailRow label="How it fits" value={data.purpose} />
       <DetailRow label="Language" value={data.language} />
       <DetailRow label="Summary" value={data.summary} />
 
