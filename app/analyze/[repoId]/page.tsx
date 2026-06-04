@@ -22,6 +22,7 @@ type GraphResponse = {
     overview?: RepoOverviewMeta | null;
   };
   storageMode?: string;
+  sourceType?: string;
   error?: string;
 };
 
