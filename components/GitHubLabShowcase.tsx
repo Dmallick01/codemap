@@ -11,6 +11,7 @@ const CATEGORY_ORDER: LabToolCategory[] = [
   "topology",
   "forensics",
   "signals",
+  "security",
 ];
 
 export default function GitHubLabShowcase() {
@@ -19,11 +20,11 @@ export default function GitHubLabShowcase() {
       <div className="text-center mb-6">
         <p className="panel-label mb-2">GitHub Lab</p>
         <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-          20 scientific instruments
+          25 instruments + DESIGN.md
         </h2>
         <p className="text-xs mt-2 mx-auto max-w-md" style={{ color: "var(--text-secondary)" }}>
-          Live Octokit probes on any mapped repo — commits, languages, CI, blame,
-          manifests, rate limits, and more. Open the lab from the architecture map.
+          Live Octokit probes — telemetry, security advisories, auth paths, DESIGN.md
+          export in UI Studio, and security briefs on the architecture map.
         </p>
       </div>
 

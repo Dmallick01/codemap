@@ -15,6 +15,7 @@ export type UiDesignExportInput = {
   targetStack?: string;
   designNotes?: string;
   sourceFiles?: FetchedFile[];
+  designMd?: string;
 };
 
 function sectionFiles(
@@ -65,6 +66,7 @@ export function buildUiDesignPrompt(ctx: UiDesignExportInput): string {
     targetStack,
     designNotes,
     sourceFiles,
+    designMd,
   } = ctx;
 
   const fileNodes = nodes.filter((n) => n.type === "fileNode");
@@ -116,7 +118,7 @@ ${focusBlock}
 
 ${designNotes ? `**Designer notes:** ${designNotes}\n` : ""}
 
----
+${designMd ? `\n---\n\n## Brand system (DESIGN.md)\n\nFollow this DESIGN.md specification for all visual decisions (colors, type, spacing, components, WCAG):\n\n\`\`\`markdown\n${designMd.trim()}\n\`\`\`\n\n---\n` : ""}
 
 ## Screens & entry routes
 

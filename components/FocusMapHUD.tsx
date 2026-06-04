@@ -13,6 +13,7 @@ type Props = {
   onNext: () => void;
   onExport?: () => void;
   onOpenLab?: () => void;
+  onSecurity?: () => void;
   bundleCount?: number;
 };
 
@@ -29,6 +30,7 @@ export default function FocusMapHUD({
   onNext,
   onExport,
   onOpenLab,
+  onSecurity,
   bundleCount = 0,
 }: Props) {
   return (
@@ -72,9 +74,19 @@ export default function FocusMapHUD({
             type="button"
             onClick={onOpenLab}
             className="btn-blueprint lab-open-btn"
-            title="GitHub Lab (20 tools)"
+            title="GitHub Lab (25 instruments)"
           >
             ⌬ Lab
+          </button>
+        )}
+        {onSecurity && (
+          <button
+            type="button"
+            onClick={onSecurity}
+            className="btn-blueprint"
+            title="Security implementation brief"
+          >
+            Security
           </button>
         )}
         {bundleCount > 0 && onExport && (

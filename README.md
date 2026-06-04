@@ -52,10 +52,33 @@ Deep mode: `POST /api/ingest` with `{ "url": "...", "mode": "deep" }`.
 | `N` / `→` | Next file |
 | `P` / `←` | Previous file |
 | `R` | Random file |
-| `?` | Toggle shortcut help |
-| `Esc` | Close detail panel |
+| `?` / `H` | Toggle panels & shortcut help |
+| `L` | GitHub Lab (25 instruments) |
+| `Esc` | Close panels / sheets |
+
+**UI Studio** (`/analyze/[repoId]/ui`): `E` export UI + DESIGN.md · `S` security brief · `L` Lab.
 
 Session state is stored per repo in the browser (`codemap-explorer-<repoId>`).
+
+## End-to-end workflows
+
+### UI Studio → DESIGN.md → agents
+
+1. Map a GitHub repo → open **UI Studio** from the header.
+2. Click **Export UI & DESIGN.md** (or press `E`).
+3. CodeMap loads saved DESIGN.md from the database, or **extracts** tokens from `globals.css` / Tailwind config via GitHub.
+4. **Lint** runs automatically after extract; fix issues in the editor.
+5. **Save to map** persists DESIGN.md on the `Repo` record; **Save + commit GitHub** writes `DESIGN.md` at the repo root (needs `GITHUB_TOKEN` with contents write).
+6. Copy or download **UI prompt**, **DESIGN.md**, or **combined** bundle for Cursor / Claude / v0.
+
+### Architecture map → Security brief
+
+1. On `/analyze/[repoId]`, use **Security** in the top HUD (always visible).
+2. Optional: **Pull all security tools** — Dependabot, secret/auth path heuristics, Actions hygiene, CodeQL (needs `GITHUB_TOKEN` + `security_events` where applicable).
+3. Run individual probes in **GitHub Lab** (`L`); security results cache into the brief via **Open security brief**.
+4. Copy or download an OWASP-aligned implementation spec for your agent.
+
+Imported `.codemap.json` maps without a GitHub `url` show a banner: Lab, extract, and live security pulls are disabled until you re-map from a URL.
 
 ## Environment variables
 

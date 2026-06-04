@@ -2,7 +2,8 @@ export type LabToolCategory =
   | "telemetry"
   | "topology"
   | "forensics"
-  | "signals";
+  | "signals"
+  | "security";
 
 export type LabToolId =
   | "repo-pulse"
@@ -24,7 +25,12 @@ export type LabToolId =
   | "manifest-radar"
   | "topic-cluster"
   | "clone-matrix"
-  | "traffic-stats";
+  | "traffic-stats"
+  | "dependency-advisories"
+  | "secret-surface"
+  | "auth-surface-map"
+  | "actions-security"
+  | "code-scanning";
 
 export type LabToolDef = {
   id: LabToolId;
@@ -200,6 +206,46 @@ export const LAB_TOOL_REGISTRY: LabToolDef[] = [
     description: "Clone and view traffic (requires push access or public metrics).",
     icon: "↗",
   },
+  {
+    id: "dependency-advisories",
+    name: "Dependency Advisories",
+    short: "Deps",
+    category: "security",
+    description: "Open Dependabot security advisories for this repository.",
+    icon: "⚠",
+  },
+  {
+    id: "secret-surface",
+    name: "Secret Surface",
+    short: "Secrets",
+    category: "security",
+    description: "Paths that may contain secrets (.env, keys, tokens) from the map tree.",
+    icon: "🔐",
+  },
+  {
+    id: "auth-surface-map",
+    name: "Auth Surface",
+    short: "Auth",
+    category: "security",
+    description: "Auth, session, and middleware paths detected in the map.",
+    icon: "🛡",
+  },
+  {
+    id: "actions-security",
+    name: "Actions Security",
+    short: "CI",
+    category: "security",
+    description: "GitHub Actions workflows and hardening reminders.",
+    icon: "⚙",
+  },
+  {
+    id: "code-scanning",
+    name: "Code Scanning",
+    short: "SAST",
+    category: "security",
+    description: "Open CodeQL / code scanning alerts when available.",
+    icon: "⌁",
+  },
 ];
 
 export const LAB_CATEGORY_LABELS: Record<LabToolCategory, string> = {
@@ -207,6 +253,7 @@ export const LAB_CATEGORY_LABELS: Record<LabToolCategory, string> = {
   topology: "Topology",
   forensics: "Forensics",
   signals: "Signals",
+  security: "Security",
 };
 
 export function getLabTool(id: string): LabToolDef | undefined {

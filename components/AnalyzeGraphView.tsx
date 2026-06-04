@@ -26,7 +26,9 @@ import SpecimenPanel from "@/components/SpecimenPanel";
 import ExportPromptSheet from "@/components/ExportPromptSheet";
 import BundleBar from "@/components/BundleBar";
 import FocusMapHUD from "@/components/FocusMapHUD";
+import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
+import SecurityExportSheet from "@/components/SecurityExportSheet";
 import type {
   RepurposeExportContext,
   BundleExportContext,
@@ -111,6 +113,7 @@ function AnalyzeGraphInner({
   const [exportOpen, setExportOpen] = useState(false);
   const [chromeOpen, setChromeOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(false);
 
   const fileNodesOnly = useMemo(
     () => nodes.filter((n) => n.type === "fileNode"),
@@ -300,6 +303,31 @@ function AnalyzeGraphInner({
     (selectedNode?.data as FileNodeData | undefined)?.path ??
     null;
 
+  const securityInput = useMemo(
+    () => ({
+      repoName,
+      repoUrl,
+      mapMode,
+      nodes,
+      edges,
+      selectedNodeIds:
+        bundle.selectedIds.length > 0
+          ? [...bundle.selectedIds]
+          : explorer.currentNode
+            ? [explorer.currentNode.id]
+            : [],
+    }),
+    [
+      repoName,
+      repoUrl,
+      mapMode,
+      nodes,
+      edges,
+      bundle.selectedIds,
+      explorer.currentNode?.id,
+    ],
+  );
+
   return (
     <div
       className="relative overflow-hidden"
@@ -339,6 +367,8 @@ function AnalyzeGraphInner({
         />
       </ReactFlow>
 
+      <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-28 left-3 z-20 max-w-sm" />
+
       <FocusMapHUD
         repoName={repoName}
         fileCount={fileCount}
@@ -351,7 +381,8 @@ function AnalyzeGraphInner({
         onPrev={explorer.goPrev}
         onNext={explorer.goNext}
         onExport={bundle.count > 0 ? openExport : undefined}
-        onOpenLab={() => setLabOpen(true)}
+        onOpenLab={repoUrl ? () => setLabOpen(true) : undefined}
+        onSecurity={() => setSecurityOpen(true)}
         bundleCount={bundle.count}
       />
 
@@ -418,6 +449,14 @@ function AnalyzeGraphInner({
                 onExportBundle={bundle.count > 0 ? openExport : undefined}
               />
               <div className="flex-1" />
+              <button
+                type="button"
+                onClick={() => setSecurityOpen(true)}
+                className="btn-blueprint"
+                title="Security implementation brief"
+              >
+                Security brief
+              </button>
               <MapImportExport
                 variant="export"
                 repoId={repoId}
@@ -456,6 +495,18 @@ function AnalyzeGraphInner({
         repoUrl={repoUrl}
         repoName={repoName}
         selectedPath={selectedFilePath}
+        onOpenSecurityBrief={() => {
+          setLabOpen(false);
+          setSecurityOpen(true);
+        }}
+      />
+
+      <SecurityExportSheet
+        open={securityOpen}
+        onClose={() => setSecurityOpen(false)}
+        repoId={repoId}
+        repoName={repoName}
+        input={securityInput}
       />
 
       <ExportPromptSheet

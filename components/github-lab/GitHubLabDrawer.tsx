@@ -9,6 +9,11 @@ import {
   type LabToolId,
 } from "@/lib/github/lab-tool-registry";
 import type { LabToolResult } from "@/lib/services/github-lab";
+import {
+  labResultToFindings,
+  mergeCachedSecurityFindings,
+  readCachedSecurityFindings,
+} from "@/lib/security/lab-findings";
 import LabToolResultView from "./LabToolResultView";
 
 type Props = {
@@ -18,6 +23,7 @@ type Props = {
   repoUrl: string | null;
   repoName: string;
   selectedPath?: string | null;
+  onOpenSecurityBrief?: () => void;
 };
 
 const CATEGORIES: LabToolCategory[] = [
@@ -25,6 +31,7 @@ const CATEGORIES: LabToolCategory[] = [
   "topology",
   "forensics",
   "signals",
+  "security",
 ];
 
 export default function GitHubLabDrawer({
@@ -34,6 +41,7 @@ export default function GitHubLabDrawer({
   repoUrl,
   repoName,
   selectedPath,
+  onOpenSecurityBrief,
 }: Props) {
   const [category, setCategory] = useState<LabToolCategory>("telemetry");
   const [activeTool, setActiveTool] = useState<LabToolDef | null>(null);
@@ -77,6 +85,9 @@ export default function GitHubLabDrawer({
           });
         } else {
           setResult(data);
+          if (tool.category === "security") {
+            mergeCachedSecurityFindings(repoId, labResultToFindings(data));
+          }
           setHistory((h) => [
             { tool: tool.short, at: new Date().toLocaleTimeString() },
             ...h.slice(0, 7),
@@ -121,7 +132,7 @@ export default function GitHubLabDrawer({
       >
         <header className="lab-drawer-header flex-none px-4 py-3 border-b flex items-start gap-3">
           <div className="flex-1 min-w-0">
-            <p className="panel-label">GitHub Lab · 20 instruments</p>
+            <p className="panel-label">GitHub Lab · 25 instruments</p>
             <h2
               className="text-sm font-bold truncate"
               style={{ color: "var(--text-primary)" }}
@@ -210,8 +221,8 @@ export default function GitHubLabDrawer({
                   Select an instrument
                 </p>
                 <p className="text-xs mt-2 max-w-xs" style={{ color: "var(--text-muted)" }}>
-                  Twenty GitHub API probes for telemetry, topology, forensics, and
-                  signals — live against {repoName}.
+                  Twenty-five GitHub API probes — telemetry, topology, forensics, signals,
+                  and security — live against {repoName}.
                 </p>
               </div>
             )}
@@ -225,19 +236,29 @@ export default function GitHubLabDrawer({
           </div>
         </div>
 
-        {history.length > 0 && (
-          <footer
-            className="flex-none px-4 py-2 border-t text-[9px] font-mono flex flex-wrap gap-2"
-            style={{ borderColor: "var(--border-subtle)", color: "var(--text-muted)" }}
-          >
-            <span className="panel-label">Session</span>
-            {history.map((h, i) => (
-              <span key={i}>
-                {h.tool}@{h.at}
-              </span>
-            ))}
-          </footer>
-        )}
+        <footer
+          className="flex-none px-4 py-2 border-t flex flex-wrap items-center gap-2"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
+          {onOpenSecurityBrief && readCachedSecurityFindings(repoId).length > 0 && (
+            <button type="button" onClick={onOpenSecurityBrief} className="btn-blueprint-primary text-[10px]">
+              Open security brief ({readCachedSecurityFindings(repoId).length})
+            </button>
+          )}
+          {history.length > 0 && (
+            <div
+              className="text-[9px] font-mono flex flex-wrap gap-2"
+              style={{ color: "var(--text-muted)" }}
+            >
+              <span className="panel-label">Session</span>
+              {history.map((h, i) => (
+                <span key={i}>
+                  {h.tool}@{h.at}
+                </span>
+              ))}
+            </div>
+          )}
+        </footer>
       </aside>
     </>
   );

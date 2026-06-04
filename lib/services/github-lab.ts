@@ -2,6 +2,7 @@ import { Octokit } from "@octokit/rest";
 import { parseGitHubUrl } from "@/lib/services/github";
 import { fetchRepoTreePaths } from "@/lib/services/github-lite";
 import type { LabToolId } from "@/lib/github/lab-tool-registry";
+import { runSecurityLabTool } from "@/lib/services/github-security";
 
 export type LabToolResult = {
   ok: boolean;
@@ -70,6 +71,14 @@ export async function runGitHubLabTool(
         return await cloneMatrix(repoUrl);
       case "traffic-stats":
         return await trafficStats(repoUrl);
+      case "dependency-advisories":
+      case "secret-surface":
+      case "auth-surface-map":
+      case "actions-security":
+      case "code-scanning":
+        return await runSecurityLabTool(toolId, repoUrl, {
+          treePaths: options?.treePaths,
+        });
       default:
         return fail(toolId, "Unknown tool");
     }

@@ -72,7 +72,7 @@ export default function AppHeader() {
 
       <div className="flex-1" />
 
-      {isAnalyze && (
+      {(isAnalyze || isUiStudio) && repoId && (
         <span
           className="hidden sm:inline text-[9px] font-mono px-2 py-0.5 rounded border"
           style={{
@@ -81,7 +81,7 @@ export default function AppHeader() {
             background: "var(--accent-dim)",
           }}
         >
-          ⌬ Lab · L
+          {isUiStudio ? "E export · S security · L lab" : "⌬ Lab · L · Security"}
         </span>
       )}
 

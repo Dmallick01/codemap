@@ -20,7 +20,9 @@ import "@xyflow/react/dist/style.css";
 
 import FileNode from "@/components/nodes/FileNode";
 import UiDesignExportSheet from "@/components/UiDesignExportSheet";
+import SecurityExportSheet from "@/components/SecurityExportSheet";
 import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
+import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import {
   buildUiStudioLayout,
   filterUiStudioFiles,
@@ -75,6 +77,7 @@ function UiStudioInner({
   const [focusId, setFocusId] = useState<string | null>(null);
   const [chromeOpen, setChromeOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(false);
 
   const layoutInputs: LayoutFileInput[] = useMemo(() => {
     return rawNodes
@@ -184,6 +187,18 @@ function UiStudioInner({
     [repoName, repoUrl, mapMode, layoutNodes, layoutEdges, selectedIds],
   );
 
+  const securityInput = useMemo(
+    () => ({
+      repoName,
+      repoUrl,
+      mapMode,
+      nodes: layoutNodes,
+      edges: layoutEdges,
+      selectedNodeIds: selectedIds,
+    }),
+    [repoName, repoUrl, mapMode, layoutNodes, layoutEdges, selectedIds],
+  );
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -192,9 +207,13 @@ function UiStudioInner({
         setChromeOpen((v) => !v);
       }
       if (e.key === "l" || e.key === "L") setLabOpen((v) => !v);
+      if (e.key === "e" || e.key === "E") setExportOpen(true);
+      if (e.key === "s" || e.key === "S") setSecurityOpen(true);
       if (e.key === "Escape") {
         setChromeOpen(false);
         setLabOpen(false);
+        setExportOpen(false);
+        setSecurityOpen(false);
       }
     }
     window.addEventListener("keydown", onKeyDown);
@@ -252,19 +271,39 @@ function UiStudioInner({
         />
       </ReactFlow>
 
-      <div className="absolute top-3 left-3 z-20 panel-blueprint px-3 py-2 text-[10px] max-w-[220px] pointer-events-auto">
+      <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-3 left-3 z-20 max-w-[260px]" />
+
+      <div
+        className={`absolute z-20 panel-blueprint px-3 py-2 text-[10px] max-w-[220px] pointer-events-auto ${repoUrl ? "top-3 left-3" : "top-28 left-3"}`}
+      >
         <p className="panel-label mb-1">UI Studio</p>
         <p style={{ color: "var(--text-secondary)" }}>
           Entry → Layouts → Components → Hooks → Styles
         </p>
         <p className="mt-1 font-mono" style={{ color: "var(--text-muted)" }}>
-          {uiFiles.length} files · shift+click multi-select
+          {uiFiles.length} files · E export · S security · L lab
         </p>
       </div>
 
-      <div className="absolute top-3 right-3 z-20 pointer-events-auto flex gap-2">
+      <div className="absolute top-3 right-3 z-20 pointer-events-auto flex flex-wrap gap-2 justify-end max-w-[min(100%,420px)]">
+        <button
+          type="button"
+          onClick={() => setExportOpen(true)}
+          className="btn-blueprint-primary"
+          title="Export UI prompt & DESIGN.md (E)"
+        >
+          Export UI & DESIGN.md
+        </button>
+        <button
+          type="button"
+          onClick={() => setSecurityOpen(true)}
+          className="btn-blueprint"
+          title="Security brief (S)"
+        >
+          Security
+        </button>
         {repoUrl && (
-          <button type="button" onClick={() => setLabOpen(true)} className="btn-blueprint">
+          <button type="button" onClick={() => setLabOpen(true)} className="btn-blueprint" title="GitHub Lab (L)">
             ⌬ Lab
           </button>
         )}
@@ -289,6 +328,18 @@ function UiStudioInner({
                 ?.path ?? null
             : null
         }
+        onOpenSecurityBrief={() => {
+          setLabOpen(false);
+          setSecurityOpen(true);
+        }}
+      />
+
+      <SecurityExportSheet
+        open={securityOpen}
+        onClose={() => setSecurityOpen(false)}
+        repoId={repoId}
+        repoName={repoName}
+        input={securityInput}
       />
 
       {chromeOpen && (
@@ -307,7 +358,7 @@ function UiStudioInner({
             onClick={() => setExportOpen(true)}
             className="btn-blueprint-primary"
           >
-            Copy UI design prompt
+            Export UI & DESIGN.md
           </button>
         </div>
       )}
@@ -317,6 +368,7 @@ function UiStudioInner({
         onClose={() => setExportOpen(false)}
         repoId={repoId}
         repoName={repoName}
+        repoUrl={repoUrl}
         input={exportInput}
       />
     </div>

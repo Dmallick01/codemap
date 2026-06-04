@@ -105,10 +105,13 @@ export default function ExplorerToolbar({
             <kbd style={{ color: "var(--text-primary)" }}>H</kbd> Toggle panels
           </span>
           <span>
+            <kbd style={{ color: "var(--text-primary)" }}>L</kbd> GitHub Lab (25 tools)
+          </span>
+          <span>
             <kbd style={{ color: "var(--text-primary)" }}>Shift</kbd>+click bundle
           </span>
           <span className="col-span-2 sm:col-span-4">
-            Tour one anchor at a time; build selective export prompts for your project.
+            Security brief in the top HUD · UI Studio exports DESIGN.md + agent prompts (header → UI Studio).
           </span>
         </div>
       )}

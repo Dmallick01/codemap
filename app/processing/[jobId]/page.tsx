@@ -225,17 +225,33 @@ export default function ProcessingPage() {
                 <h2 className="text-xl font-bold text-emerald-400 mb-2">
                   {isLite ? "Lite map ready" : "Analysis complete"}
                 </h2>
-                <p className="text-gray-400 mb-6">
+                <p className="text-gray-400 mb-4">
                   {isLite
                     ? "See what this repo is and how its folders connect."
                     : "Your code map is ready to explore."}
                 </p>
-                <button
-                  onClick={() => router.push(`/analyze/${job.repo.id}`)}
-                  className="btn-blueprint-primary px-6 py-3"
-                >
-                  View Code Map
-                </button>
+                <ul className="text-left text-xs text-gray-500 mb-6 max-w-md mx-auto space-y-1">
+                  <li>
+                    <strong className="text-gray-400">Architecture map</strong> — tour files, ⌬ GitHub Lab (L), Security brief
+                  </li>
+                  <li>
+                    <strong className="text-gray-400">UI Studio</strong> — export UI prompts + DESIGN.md (E), security brief (S)
+                  </li>
+                </ul>
+                <div className="flex flex-wrap gap-3 justify-center">
+                  <button
+                    onClick={() => router.push(`/analyze/${job.repo.id}`)}
+                    className="btn-blueprint-primary px-6 py-3"
+                  >
+                    View Code Map
+                  </button>
+                  <button
+                    onClick={() => router.push(`/analyze/${job.repo.id}/ui`)}
+                    className="btn-blueprint px-6 py-3"
+                  >
+                    Open UI Studio
+                  </button>
+                </div>
               </div>
             )}
 
