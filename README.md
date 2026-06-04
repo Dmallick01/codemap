@@ -1,8 +1,10 @@
 # CodeMap
 
+[![Live demo](https://img.shields.io/badge/demo-Vercel-black?style=flat-square)](https://codemap-mocw.vercel.app)
+
 **One line:** AI-powered code deconstructor — ingest a public GitHub repo, explore files with keyboard navigation (hf-viewer style), and inspect an interactive dependency graph.
 
-Public repo: [github.com/Dmallick01/codemap](https://github.com/Dmallick01/codemap)
+**Live demo:** [codemap-mocw.vercel.app](https://codemap-mocw.vercel.app) · Repo: [github.com/Dmallick01/codemap](https://github.com/Dmallick01/codemap)
 
 ## What it does
 
@@ -65,6 +67,8 @@ Session state is stored per repo in the browser (`codemap-explorer-<repoId>`).
 | `MAX_FILES` | No | Cap files per ingest (default `500`) |
 
 ## Deploy (Vercel + Neon)
+
+Production: **https://codemap-mocw.vercel.app** (set this as the repo homepage / Vercel production domain).
 
 1. Create a [Neon](https://neon.tech) database → copy `DATABASE_URL`
 2. Import this repo on [Vercel](https://vercel.com/new)
