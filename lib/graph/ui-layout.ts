@@ -5,15 +5,16 @@ import { uiStudioCategory } from "@/lib/graph/path-heuristics";
 
 const COL = {
   entry: 0,
-  routing: 248,
-  component: 496,
-  hook: 744,
-  style: 920,
-  other: 620,
+  routing: 320,
+  component: 680,
+  hook: 1040,
+  style: 1280,
+  other: 920,
 };
 
-const ROW_GAP = 78;
-const NODE_W = 268;
+/** Vertical gap between UI Studio file rows (larger tiles). */
+const ROW_GAP = 112;
+const NODE_W = 300;
 
 export type UiLayoutInput = {
   id: string;

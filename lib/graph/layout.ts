@@ -16,14 +16,16 @@ export type LayoutFileInput = {
   modules?: unknown[];
 };
 
-const NODE_W = 268;
-const NODE_H = 104;
-const GROUP_PAD_X = 20;
-const GROUP_PAD_Y = 32;
-const GROUP_GAP_Y = 28;
-const ROLE_STEP_X = 220;
-const FILE_GAP_Y = 82;
-const DEPTH_STEP_X = 16;
+/** Tile width in layout math (keep in sync with FileNode max-width). */
+const NODE_W = 300;
+/** Vertical stride per file row — tuned for larger tiles without overlap. */
+const FILE_GAP_Y = 118;
+const NODE_H = 118;
+const GROUP_PAD_X = 28;
+const GROUP_PAD_Y = 40;
+const GROUP_GAP_Y = 48;
+const ROLE_STEP_X = 300;
+const DEPTH_STEP_X = 24;
 
 export type GroupNodeData = {
   label: string;

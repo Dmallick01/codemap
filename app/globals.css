@@ -246,26 +246,27 @@ pre,
 
 .map-file-node-title {
   color: var(--text-primary);
-  font-size: 15px;
-  line-height: 1.3;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
 }
 
 .map-file-node-path {
   color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1.35;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .map-file-node-summary {
   color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .map-file-node-framework {
   color: var(--text-muted);
-  font-size: 11px;
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .map-group-label {

@@ -57,7 +57,7 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
     <div
       className={[
         "map-file-node relative rounded-lg border overflow-visible",
-        "px-3.5 py-3 min-w-[220px] max-w-[268px]",
+        "px-4 py-3.5 min-w-[260px] max-w-[300px]",
         "transition-all duration-150 cursor-pointer",
         selected
           ? "map-file-node-selected ring-2 shadow-2xl"
@@ -100,7 +100,7 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
 
       <div className="flex items-center gap-1 mb-1">
         <span
-          className="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
+          className="text-[11px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
           style={{
             color: roleMeta.color,
             background: roleMeta.bg,
@@ -110,7 +110,7 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
           {data.roleLabel ?? roleMeta.label}
         </span>
         <span
-          className={`text-[10px] font-mono px-1 py-0.5 rounded border ${langStyle.badge}`}
+          className={`text-[11px] font-mono px-1 py-0.5 rounded border ${langStyle.badge}`}
         >
           {extLabel}
         </span>

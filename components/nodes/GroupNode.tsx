@@ -16,7 +16,7 @@ export default memo(function GroupNode({ data }: GroupNodeProps) {
       }}
     >
       <div
-        className="map-group-label absolute -top-3 left-3 px-2 py-0.5 rounded-md text-[13px] font-semibold tracking-wide flex items-center gap-1.5"
+        className="map-group-label absolute -top-3 left-3 px-2 py-0.5 rounded-md text-[14px] font-semibold tracking-wide flex items-center gap-1.5"
         style={{
           border: `1px solid ${data.border}`,
           color: data.color,
