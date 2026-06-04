@@ -16,16 +16,17 @@ export type LayoutFileInput = {
   modules?: unknown[];
 };
 
-/** Tile width in layout math (keep in sync with FileNode max-width). */
-const NODE_W = 300;
-/** Vertical stride per file row — tuned for larger tiles without overlap. */
-const FILE_GAP_Y = 118;
-const NODE_H = 118;
-const GROUP_PAD_X = 28;
-const GROUP_PAD_Y = 40;
-const GROUP_GAP_Y = 48;
-const ROLE_STEP_X = 300;
-const DEPTH_STEP_X = 24;
+import {
+  MAP_TILE_ROW_STRIDE,
+  MAP_GROUP_PAD_X,
+  MAP_GROUP_PAD_Y,
+  MAP_GROUP_GAP_Y,
+  MAP_ROLE_STEP_X,
+  MAP_DEPTH_STEP_X,
+  groupHeightForFileCount,
+  groupWidthForDepth,
+  mapFileNodeStyle,
+} from "./map-tile-metrics";
 
 export type GroupNodeData = {
   label: string;
@@ -98,12 +99,12 @@ export function buildSemanticLayout(
       ...bucket.files.map((f) => depth.get(f.id) ?? 0),
     );
     const baseX =
-      roleXIndex(bucket.role) * ROLE_STEP_X + maxDepthInBucket * DEPTH_STEP_X;
+      roleXIndex(bucket.role) * MAP_ROLE_STEP_X +
+      maxDepthInBucket * MAP_DEPTH_STEP_X;
 
     const baseY = roleBandY.get(bucket.role) ?? 0;
-    const groupWidth = GROUP_PAD_X * 2 + NODE_W;
-    const groupHeight =
-      GROUP_PAD_Y * 2 + bucket.files.length * FILE_GAP_Y;
+    const groupWidth = groupWidthForDepth(maxDepthInBucket);
+    const groupHeight = groupHeightForFileCount(bucket.files.length);
 
     nodes.push({
       id: groupId,
@@ -135,8 +136,8 @@ export function buildSemanticLayout(
         parentId: groupId,
         extent: "parent",
         position: {
-          x: GROUP_PAD_X + d * DEPTH_STEP_X,
-          y: GROUP_PAD_Y + i * FILE_GAP_Y,
+          x: MAP_GROUP_PAD_X + d * MAP_DEPTH_STEP_X,
+          y: MAP_GROUP_PAD_Y + i * MAP_TILE_ROW_STRIDE,
         },
         data: {
           path: file.path,
@@ -151,11 +152,11 @@ export function buildSemanticLayout(
           frameworkLabel: file.sem.frameworkLabel,
           purpose: file.sem.purpose,
         },
-        style: { zIndex: 1 },
+        style: { ...mapFileNodeStyle },
       });
     });
 
-    roleBandY.set(bucket.role, baseY + groupHeight + GROUP_GAP_Y);
+    roleBandY.set(bucket.role, baseY + groupHeight + MAP_GROUP_GAP_Y);
   }
 
   return { nodes, edges: graphEdges, semantics };

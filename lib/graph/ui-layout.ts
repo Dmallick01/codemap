@@ -3,6 +3,8 @@ import type { FileNodeData } from "@/lib/store/graph";
 import { ROLE_META, type ArchRole } from "@/lib/graph/semantic";
 import { uiStudioCategory } from "@/lib/graph/path-heuristics";
 
+import { MAP_TILE_ROW_STRIDE, mapFileNodeStyle } from "./map-tile-metrics";
+
 const COL = {
   entry: 0,
   routing: 320,
@@ -11,10 +13,6 @@ const COL = {
   style: 1280,
   other: 920,
 };
-
-/** Vertical gap between UI Studio file rows (larger tiles). */
-const ROW_GAP = 112;
-const NODE_W = 300;
 
 export type UiLayoutInput = {
   id: string;
@@ -62,7 +60,7 @@ export function buildUiStudioLayout(
       nodes.push({
         id: file.id,
         type: "fileNode",
-        position: { x, y: 40 + i * ROW_GAP },
+        position: { x, y: 40 + i * MAP_TILE_ROW_STRIDE },
         data: {
           path: file.path,
           language: file.language ?? undefined,
@@ -73,7 +71,7 @@ export function buildUiStudioLayout(
           frameworkLabel: file.frameworkLabel,
           uiCategory: key,
         } satisfies FileNodeData & { uiCategory?: string },
-        style: { width: NODE_W, zIndex: 1 },
+        style: { ...mapFileNodeStyle },
       });
     });
   }

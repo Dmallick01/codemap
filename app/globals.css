@@ -221,13 +221,19 @@ pre,
   --xy-minimap-node-background-color-default: rgba(74, 222, 128, 0.4);
 }
 
-/* Map file tablets — translucent glass over canvas */
+/* Map file tablets — fixed size must match lib/graph/map-tile-metrics.ts */
 .map-file-node {
+  width: 300px;
+  height: 132px;
+  box-sizing: border-box;
+  padding: 0.65rem 0.85rem;
   background: var(--map-node-bg) !important;
   backdrop-filter: blur(var(--map-node-blur)) saturate(1.5);
   -webkit-backdrop-filter: blur(var(--map-node-blur)) saturate(1.5);
   box-shadow: var(--map-node-shadow);
   border-width: 1px;
+  display: flex;
+  flex-direction: column;
 }
 
 .map-file-node-selected {
@@ -259,8 +265,11 @@ pre,
 
 .map-file-node-summary {
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .map-file-node-framework {

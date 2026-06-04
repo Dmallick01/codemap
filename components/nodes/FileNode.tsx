@@ -56,8 +56,7 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
   return (
     <div
       className={[
-        "map-file-node relative rounded-lg border overflow-visible",
-        "px-4 py-3.5 min-w-[260px] max-w-[300px]",
+        "map-file-node relative rounded-lg border box-border overflow-hidden",
         "transition-all duration-150 cursor-pointer",
         selected
           ? "map-file-node-selected ring-2 shadow-2xl"
@@ -98,7 +97,7 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
         </span>
       )}
 
-      <div className="flex items-center gap-1 mb-1">
+      <div className="flex items-center gap-1 mb-1 shrink-0">
         <span
           className="text-[11px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
           style={{
@@ -116,11 +115,11 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
         </span>
       </div>
 
-      <p className="map-file-node-title font-semibold truncate leading-tight" title={data.path}>
+      <p className="map-file-node-title font-semibold truncate leading-tight shrink-0" title={data.path}>
         {fname}
       </p>
 
-      <p className="map-file-node-path truncate mt-0.5 font-mono" title={data.path}>
+      <p className="map-file-node-path truncate mt-0.5 font-mono shrink-0" title={data.path}>
         {data.path}
       </p>
 

@@ -44,6 +44,7 @@ import { useGraphExplorer } from "@/hooks/useGraphExplorer";
 import { useGraphStore } from "@/lib/store/graph";
 import type { FileNodeData } from "@/lib/store/graph";
 import { ROLE_META, type ArchRole, edgeStyle } from "@/lib/graph/semantic";
+import { relayoutArchitectureNodes } from "@/lib/graph/relayout-graph";
 
 const nodeTypes = {
   fileNode: FileNode,
@@ -110,8 +111,19 @@ function AnalyzeGraphInner({
   onReanalyze,
   reanalyzing,
 }: Props) {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+  const laidOutNodes = useMemo(
+    () => relayoutArchitectureNodes(initialNodes, initialEdges),
+    [initialNodes, initialEdges],
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(laidOutNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+
+  useEffect(() => {
+    setNodes(laidOutNodes);
+    setEdges(initialEdges);
+    didInitialFit.current = false;
+  }, [laidOutNodes, initialEdges, setNodes, setEdges]);
   const { fitView } = useReactFlow();
   const colorMode = useCodemapColorMode();
   const { selectedNode, setSelectedNode } = useGraphStore();
