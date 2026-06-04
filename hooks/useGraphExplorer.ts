@@ -7,6 +7,12 @@ import {
   loadExplorerSession,
   saveExplorerSession,
 } from "@/lib/explorer/session";
+import {
+  sortNodesForTour,
+  getNodeNeighbors,
+  type NodeNeighbors,
+} from "@/lib/explorer/tour-order";
+import type { Edge } from "@xyflow/react";
 
 function nodePath(node: Node): string {
   const data = node.data as FileNodeData;
@@ -22,9 +28,10 @@ export function sortFileNodes(nodes: Node[]): Node[] {
 export function useGraphExplorer(
   repoId: string,
   nodes: Node[],
+  edges: Edge[],
   setSelectedNode: (n: SelectedNode | null) => void,
 ) {
-  const ordered = useMemo(() => sortFileNodes(nodes), [nodes]);
+  const ordered = useMemo(() => sortNodesForTour(nodes), [nodes]);
   const [index, setIndex] = useState(0);
   const [viewedIds, setViewedIds] = useState<string[]>([]);
   const [showHelp, setShowHelp] = useState(false);
@@ -81,6 +88,19 @@ export function useGraphExplorer(
 
   const currentNode = ordered[index] ?? null;
 
+  const neighbors: NodeNeighbors = useMemo(() => {
+    if (!currentNode) return { outgoing: [], incoming: [] };
+    return getNodeNeighbors(currentNode.id, ordered, edges);
+  }, [currentNode, ordered, edges]);
+
+  const focusIdByNodeId = useCallback(
+    (nodeId: string) => {
+      const idx = ordered.findIndex((n) => n.id === nodeId);
+      if (idx >= 0) focusAt(idx);
+    },
+    [ordered, focusAt],
+  );
+
   return {
     ordered,
     index,
@@ -88,11 +108,14 @@ export function useGraphExplorer(
     viewedCount: viewedIds.length,
     currentPath: currentNode ? nodePath(currentNode) : "",
     currentNode,
+    currentData: currentNode ? (currentNode.data as FileNodeData) : null,
+    neighbors,
     showHelp,
     setShowHelp,
     goNext,
     goPrev,
     goRandom,
     focusAt,
+    focusIdByNodeId,
   };
 }

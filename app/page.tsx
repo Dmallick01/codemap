@@ -170,8 +170,9 @@ export default function Home() {
             <li>We pick ~30 anchor files (README, routes, main folders)</li>
             <li>Colored map shows roles and how layers connect</li>
             <li>
-              Press <kbd className="text-gray-300 px-1">N</kbd> /{" "}
-              <kbd className="text-gray-300 px-1">P</kbd> to tour anchor files
+              Repo tour (HF Viewer–style): <kbd className="text-gray-300 px-1">N</kbd> /{" "}
+              <kbd className="text-gray-300 px-1">P</kbd> through anchor files with
+              connections
             </li>
           </ol>
         </div>

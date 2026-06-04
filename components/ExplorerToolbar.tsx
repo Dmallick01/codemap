@@ -55,7 +55,10 @@ export default function ExplorerToolbar({
           Random
         </button>
 
-        <span className="text-[11px] text-gray-500 font-mono ml-1">
+        <span className="text-[11px] text-violet-400/80 font-medium ml-1">
+          Tour
+        </span>
+        <span className="text-[11px] text-gray-500 font-mono">
           {index + 1} / {total}
         </span>
         <span className="text-[11px] text-emerald-500/80">
@@ -96,7 +99,8 @@ export default function ExplorerToolbar({
             <kbd className="text-gray-300">Esc</kbd> Close panel
           </span>
           <span className="col-span-2 sm:col-span-4 text-gray-600">
-            Progress auto-saves in this browser — resume by reopening the same repo.
+            HF Viewer–style: one anchor file at a time, with connections on the
+            map. Progress auto-saves — resume by reopening this repo.
           </span>
         </div>
       )}
