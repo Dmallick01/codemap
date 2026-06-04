@@ -46,22 +46,20 @@ function LoadingSkeleton() {
   const steps = LITE_STEPS;
   return (
     <div className="animate-pulse mt-8">
-      <div className="h-7 w-48 bg-gray-800 rounded mb-2" />
-      <div className="h-4 w-32 bg-gray-800/60 rounded mb-10" />
+      <div className="h-7 w-48 processing-skeleton rounded mb-2" />
+      <div className="h-4 w-32 processing-skeleton rounded mb-10 opacity-60" />
       <div className="flex items-center mb-10">
         {steps.map((step, i) => (
           <div key={step} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-gray-800 border-2 border-gray-700" />
-              <div className="mt-2 h-3 w-14 bg-gray-800 rounded" />
+              <div className="w-10 h-10 rounded-full processing-skeleton border-2" />
+              <div className="mt-2 h-3 w-14 processing-skeleton rounded" />
             </div>
-            {i < steps.length - 1 && (
-              <div className="flex-1 h-0.5 mx-2 mt-[-20px] bg-gray-800" />
-            )}
+            {i < steps.length - 1 && <div className="flex-1 h-0.5 mx-2 mt-[-20px] processing-track" />}
           </div>
         ))}
       </div>
-      <div className="rounded-lg border border-gray-800 bg-gray-800/30 p-4 h-16" />
+      <div className="processing-panel rounded-lg p-4 h-16" />
     </div>
   );
 }
@@ -132,7 +130,9 @@ export default function ProcessingPage() {
           <>
             <div className="mt-8 mb-10">
               <h1 className="text-2xl font-bold">{job.repo.name}</h1>
-              <p className="text-sm text-gray-500 mt-1">Job {job.jobId}</p>
+              <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
+                Job {job.jobId}
+              </p>
             </div>
 
             {/* Step indicators — stack vertically on mobile */}
@@ -156,7 +156,7 @@ export default function ProcessingPage() {
                               ? "border-[var(--accent)] bg-[var(--accent)] text-white animate-pulse"
                               : isFailed || (isError && isActive)
                                 ? "bg-red-600 border-red-600 text-white"
-                                : "border-gray-700 text-gray-600"
+                                : "processing-step-idle border-[var(--border-subtle)] detail-muted"
                         }`}
                       >
                         {isComplete ? (
@@ -169,7 +169,7 @@ export default function ProcessingPage() {
                       </div>
                       <span
                         className={`sm:mt-2 ml-3 sm:ml-0 text-xs font-medium ${
-                          isActive || isComplete ? "text-gray-200" : "text-gray-600"
+                          isActive || isComplete ? "detail-primary" : "detail-muted"
                         }`}
                       >
                         {STEP_LABELS[step]}
@@ -179,7 +179,7 @@ export default function ProcessingPage() {
                     {i < steps.length - 1 && (
                       <div
                         className={`hidden sm:block flex-1 h-0.5 mx-2 mt-[-20px] ${
-                          isComplete ? "bg-emerald-600" : "bg-gray-800"
+                          isComplete ? "processing-track-fill" : "processing-track"
                         }`}
                       />
                     )}
@@ -191,27 +191,24 @@ export default function ProcessingPage() {
             {/* Progress bar */}
             {!isDone && !isError && job.total > 0 && (
               <div className="mb-8">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <div className="flex justify-between text-xs detail-muted mb-1">
                   <span>
                     {job.progress} / {job.total}
                   </span>
                   <span>{progressPct}%</span>
                 </div>
-                <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
+                <div className="h-2 rounded-full processing-track overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      background: "var(--accent)",
-                      width: `${progressPct}%`,
-                    }}
+                    className="h-full rounded-full processing-track-fill transition-all duration-500"
+                    style={{ width: `${progressPct}%` }}
                   />
                 </div>
               </div>
             )}
 
             {/* Log */}
-            <div className="rounded-lg border border-gray-800 bg-gray-800/30 p-4 mb-8">
-              <p className="text-sm text-gray-400 font-mono">{job.log}</p>
+            <div className="processing-panel rounded-lg p-4 mb-8">
+              <p className="text-sm font-mono detail-secondary">{job.log}</p>
             </div>
 
             {/* Done state */}
@@ -222,20 +219,20 @@ export default function ProcessingPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-emerald-400 mb-2">
+                <h2 className="text-xl font-bold mb-2" style={{ color: "var(--accent)" }}>
                   {isLite ? "Lite map ready" : "Analysis complete"}
                 </h2>
-                <p className="text-gray-400 mb-4">
+                <p className="detail-secondary mb-4">
                   {isLite
                     ? "See what this repo is and how its folders connect."
                     : "Your code map is ready to explore."}
                 </p>
-                <ul className="text-left text-xs text-gray-500 mb-6 max-w-md mx-auto space-y-1">
+                <ul className="text-left text-xs detail-muted mb-6 max-w-md mx-auto space-y-1 panel-blueprint p-4">
                   <li>
-                    <strong className="text-gray-400">Architecture map</strong> — tour files, ⌬ GitHub Lab (L), Security brief
+                    <strong className="detail-secondary">Architecture map</strong> — tour files, ⌬ GitHub Lab (L), Security brief
                   </li>
                   <li>
-                    <strong className="text-gray-400">UI Studio</strong> — export UI prompts + DESIGN.md (E), security brief (S)
+                    <strong className="detail-secondary">UI Studio</strong> — export UI prompts + DESIGN.md (E), security brief (S)
                   </li>
                 </ul>
                 <div className="flex flex-wrap gap-3 justify-center">
@@ -271,7 +268,7 @@ export default function ProcessingPage() {
                 </p>
                 <Link
                   href="/"
-                  className="mt-4 inline-block rounded-lg border border-gray-700 px-6 py-3 font-medium text-gray-300 hover:bg-gray-800 transition-colors"
+                  className="mt-4 inline-block btn-blueprint px-6 py-3 font-medium"
                 >
                   Try Again
                 </Link>

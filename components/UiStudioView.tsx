@@ -21,6 +21,7 @@ import "@xyflow/react/dist/style.css";
 import FileNode from "@/components/nodes/FileNode";
 import UiDesignExportSheet from "@/components/UiDesignExportSheet";
 import SecurityExportSheet from "@/components/SecurityExportSheet";
+import ElementPromptGeneratorSheet from "@/components/ElementPromptGeneratorSheet";
 import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
 import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import {
@@ -78,6 +79,7 @@ function UiStudioInner({
   const [chromeOpen, setChromeOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
+  const [elementPromptOpen, setElementPromptOpen] = useState(false);
 
   const layoutInputs: LayoutFileInput[] = useMemo(() => {
     return rawNodes
@@ -208,11 +210,13 @@ function UiStudioInner({
       }
       if (e.key === "l" || e.key === "L") setLabOpen((v) => !v);
       if (e.key === "e" || e.key === "E") setExportOpen(true);
+      if (e.key === "g" || e.key === "G") setElementPromptOpen(true);
       if (e.key === "s" || e.key === "S") setSecurityOpen(true);
       if (e.key === "Escape") {
         setChromeOpen(false);
         setLabOpen(false);
         setExportOpen(false);
+        setElementPromptOpen(false);
         setSecurityOpen(false);
       }
     }
@@ -281,18 +285,26 @@ function UiStudioInner({
           Entry → Layouts → Components → Hooks → Styles
         </p>
         <p className="mt-1 font-mono" style={{ color: "var(--text-muted)" }}>
-          {uiFiles.length} files · E export · S security · L lab
+          {uiFiles.length} files · G build prompt · E export · L lab
         </p>
       </div>
 
       <div className="absolute top-3 right-3 z-20 pointer-events-auto flex flex-wrap gap-2 justify-end max-w-[min(100%,420px)]">
         <button
           type="button"
-          onClick={() => setExportOpen(true)}
+          onClick={() => setElementPromptOpen(true)}
           className="btn-blueprint-primary"
+          title="Repo prompt generator (G)"
+        >
+          Prompts
+        </button>
+        <button
+          type="button"
+          onClick={() => setExportOpen(true)}
+          className="btn-blueprint"
           title="Export UI prompt & DESIGN.md (E)"
         >
-          Export UI & DESIGN.md
+          Export UI
         </button>
         <button
           type="button"
@@ -340,6 +352,14 @@ function UiStudioInner({
         repoId={repoId}
         repoName={repoName}
         input={securityInput}
+      />
+
+      <ElementPromptGeneratorSheet
+        open={elementPromptOpen}
+        onClose={() => setElementPromptOpen(false)}
+        repoId={repoId}
+        repoName={repoName}
+        input={exportInput}
       />
 
       {chromeOpen && (

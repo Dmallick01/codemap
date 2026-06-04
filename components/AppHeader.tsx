@@ -19,12 +19,8 @@ export default function AppHeader() {
 
   return (
     <header
-      className="flex-none flex items-center gap-4 px-4 z-40 border-b"
-      style={{
-        height: "var(--header-h)",
-        background: "var(--bg-elevated)",
-        borderColor: "var(--border-subtle)",
-      }}
+      className="app-header flex-none flex items-center gap-4 px-4 z-40 border-b"
+      style={{ height: "var(--header-h)" }}
     >
       <Link
         href="/"
@@ -73,15 +69,8 @@ export default function AppHeader() {
       <div className="flex-1" />
 
       {(isAnalyze || isUiStudio) && repoId && (
-        <span
-          className="hidden sm:inline text-[9px] font-mono px-2 py-0.5 rounded border"
-          style={{
-            color: "var(--accent)",
-            borderColor: "var(--border-default)",
-            background: "var(--accent-dim)",
-          }}
-        >
-          {isUiStudio ? "E export · S security · L lab" : "⌬ Lab · L · Security"}
+        <span className="hidden sm:inline text-[9px] font-mono px-2 py-0.5 rounded border glass-chip" style={{ color: "var(--accent)" }}>
+          {isUiStudio ? "G build element · E export · L lab" : "G build · ⌬ Lab · L"}
         </span>
       )}
 

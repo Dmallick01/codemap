@@ -29,6 +29,7 @@ import FocusMapHUD from "@/components/FocusMapHUD";
 import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
 import SecurityExportSheet from "@/components/SecurityExportSheet";
+import ElementPromptGeneratorSheet from "@/components/ElementPromptGeneratorSheet";
 import type {
   RepurposeExportContext,
   BundleExportContext,
@@ -114,6 +115,7 @@ function AnalyzeGraphInner({
   const [chromeOpen, setChromeOpen] = useState(false);
   const [labOpen, setLabOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
+  const [elementPromptOpen, setElementPromptOpen] = useState(false);
 
   const fileNodesOnly = useMemo(
     () => nodes.filter((n) => n.type === "fileNode"),
@@ -273,6 +275,10 @@ function AnalyzeGraphInner({
         case "L":
           setLabOpen((v) => !v);
           break;
+        case "g":
+        case "G":
+          setElementPromptOpen(true);
+          break;
         default:
           break;
       }
@@ -303,6 +309,16 @@ function AnalyzeGraphInner({
     (selectedNode?.data as FileNodeData | undefined)?.path ??
     null;
 
+  const elementPromptNodeIds = useMemo(
+    () =>
+      bundle.selectedIds.length > 0
+        ? [...bundle.selectedIds]
+        : explorer.currentNode
+          ? [explorer.currentNode.id]
+          : [],
+    [bundle.selectedIds, explorer.currentNode?.id],
+  );
+
   const securityInput = useMemo(
     () => ({
       repoName,
@@ -310,23 +326,12 @@ function AnalyzeGraphInner({
       mapMode,
       nodes,
       edges,
-      selectedNodeIds:
-        bundle.selectedIds.length > 0
-          ? [...bundle.selectedIds]
-          : explorer.currentNode
-            ? [explorer.currentNode.id]
-            : [],
+      selectedNodeIds: elementPromptNodeIds,
     }),
-    [
-      repoName,
-      repoUrl,
-      mapMode,
-      nodes,
-      edges,
-      bundle.selectedIds,
-      explorer.currentNode?.id,
-    ],
+    [repoName, repoUrl, mapMode, nodes, edges, elementPromptNodeIds],
   );
+
+  const elementPromptInput = securityInput;
 
   return (
     <div
@@ -383,6 +388,7 @@ function AnalyzeGraphInner({
         onExport={bundle.count > 0 ? openExport : undefined}
         onOpenLab={repoUrl ? () => setLabOpen(true) : undefined}
         onSecurity={() => setSecurityOpen(true)}
+        onBuildElement={() => setElementPromptOpen(true)}
         bundleCount={bundle.count}
       />
 
@@ -423,6 +429,7 @@ function AnalyzeGraphInner({
               neighbors={explorer.neighbors}
               onJumpTo={explorer.focusIdByNodeId}
               onExportPrompt={openExport}
+              onBuildElement={() => setElementPromptOpen(true)}
               bundleCount={bundle.count}
               inBundle={
                 explorer.currentNode
@@ -449,6 +456,14 @@ function AnalyzeGraphInner({
                 onExportBundle={bundle.count > 0 ? openExport : undefined}
               />
               <div className="flex-1" />
+              <button
+                type="button"
+                onClick={() => setElementPromptOpen(true)}
+                className="btn-blueprint-primary"
+                title="Repo prompt generator (G)"
+              >
+                Prompts
+              </button>
               <button
                 type="button"
                 onClick={() => setSecurityOpen(true)}
@@ -507,6 +522,14 @@ function AnalyzeGraphInner({
         repoId={repoId}
         repoName={repoName}
         input={securityInput}
+      />
+
+      <ElementPromptGeneratorSheet
+        open={elementPromptOpen}
+        onClose={() => setElementPromptOpen(false)}
+        repoId={repoId}
+        repoName={repoName}
+        input={elementPromptInput}
       />
 
       <ExportPromptSheet

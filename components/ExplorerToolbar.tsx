@@ -105,6 +105,9 @@ export default function ExplorerToolbar({
             <kbd style={{ color: "var(--text-primary)" }}>H</kbd> Toggle panels
           </span>
           <span>
+            <kbd style={{ color: "var(--text-primary)" }}>G</kbd> Build element prompt
+          </span>
+          <span>
             <kbd style={{ color: "var(--text-primary)" }}>L</kbd> GitHub Lab (25 tools)
           </span>
           <span>

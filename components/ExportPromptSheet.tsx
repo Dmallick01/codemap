@@ -204,88 +204,89 @@ export default function ExportPromptSheet({
         onClick={onClose}
       />
       <div className="relative w-full sm:max-w-3xl max-h-[90vh] flex flex-col sheet-panel rounded-t-xl sm:rounded-xl shadow-2xl">
-        <div className="flex-none px-4 py-3 border-b border-gray-800 flex items-start justify-between gap-3">
+        <div
+          className="flex-none px-4 py-3 border-b flex items-start justify-between gap-3"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
           <div className="min-w-0">
-            <h2
-              id="export-prompt-title"
-              className="text-sm font-semibold text-gray-100"
-            >
+            <h2 id="export-prompt-title" className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
               {title}
             </h2>
-            <p className="text-[10px] text-gray-500 mt-0.5">
+            <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
               Selective gitingest — prompt + optional source files
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-300 text-lg leading-none px-1"
-          >
+          <button type="button" onClick={onClose} className="btn-blueprint text-lg leading-none px-1">
             ×
           </button>
         </div>
 
-        <div className="flex-none px-4 py-2 space-y-2 border-b border-gray-800/80">
+        <div
+          className="flex-none px-4 py-2 space-y-2 border-b"
+          style={{ borderColor: "var(--border-subtle)" }}
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <label className="block">
-              <span className="text-[9px] uppercase tracking-wider text-gray-600">
-                Your project
-              </span>
+              <span className="panel-label">Your project</span>
               <input
                 value={targetProject}
                 onChange={(e) => setTargetProject(e.target.value)}
                 placeholder="my-saas-app"
-                className="mt-1 w-full text-xs bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-gray-200"
+                className="mt-1 w-full text-xs sheet-input rounded px-2 py-1.5"
               />
             </label>
             <label className="block">
-              <span className="text-[9px] uppercase tracking-wider text-gray-600">
-                Stack
-              </span>
+              <span className="panel-label">Stack</span>
               <input
                 value={targetStack}
                 onChange={(e) => setTargetStack(e.target.value)}
                 placeholder="Next.js, Prisma…"
-                className="mt-1 w-full text-xs bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-gray-200"
+                className="mt-1 w-full text-xs sheet-input rounded px-2 py-1.5"
               />
             </label>
           </div>
-          <div className="flex flex-wrap gap-4 text-[11px]">
+          <div className="flex flex-wrap gap-4 text-[11px]" style={{ color: "var(--text-secondary)" }}>
             {isBundle && (
-              <label className="flex items-center gap-2 text-gray-400 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={includeNeighbors}
                   onChange={(e) => setIncludeNeighbors(e.target.checked)}
-                  className="rounded border-gray-600"
+                  className="rounded"
+                  style={{ accentColor: "var(--accent)" }}
                 />
                 Include neighbor paths in bundle
               </label>
             )}
-            <label className="flex items-center gap-2 text-gray-400 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={attachSources}
                 onChange={(e) => setAttachSources(e.target.checked)}
-                className="rounded border-gray-600"
+                className="rounded"
+                style={{ accentColor: "var(--accent)" }}
               />
               Attach source files (deep DB first, else GitHub)
             </label>
           </div>
           {loadingSources && (
-            <p className="text-[10px] text-violet-400">Fetching file contents…</p>
+            <p className="text-[10px]" style={{ color: "var(--accent)" }}>
+              Fetching file contents…
+            </p>
           )}
           {sourceMeta && attachSources && !loadingSources && (
-            <p className="text-[10px] text-gray-500">
+            <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
               Sources: {sourceMeta.fromDatabase} from database,{" "}
               {sourceMeta.fromGithub} from GitHub ({sourceMeta.mode} mode)
             </p>
           )}
           {fetchError && (
-            <p className="text-[10px] text-red-400">{fetchError}</p>
+            <p className="text-[10px]" style={{ color: "var(--error)" }}>
+              {fetchError}
+            </p>
           )}
           {isBundle && bundlePaths.length > 0 && (
-            <p className="text-[10px] text-gray-600 font-mono">
+            <p className="text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
               {bundlePaths.length} path(s):{" "}
               {bundlePaths.slice(0, 4).join(", ")}
               {bundlePaths.length > 4 ? "…" : ""}
@@ -296,7 +297,7 @@ export default function ExportPromptSheet({
         <textarea
           readOnly
           value={prompt}
-          className="flex-1 min-h-[220px] m-4 text-[11px] font-mono text-gray-300 bg-gray-900/80 border border-gray-800 rounded-lg p-3 leading-relaxed resize-none"
+          className="flex-1 min-h-[220px] m-4 text-[11px] font-mono sheet-textarea rounded-lg p-3 leading-relaxed resize-none"
         />
 
         <div className="flex-none px-4 pb-4 flex flex-wrap gap-2">
@@ -304,7 +305,7 @@ export default function ExportPromptSheet({
             type="button"
             onClick={handleCopy}
             disabled={loadingSources}
-            className="flex-1 min-w-[120px] text-xs font-medium py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white transition-colors disabled:opacity-50"
+            className="flex-1 min-w-[120px] btn-blueprint-primary py-2 disabled:opacity-50"
           >
             {copied ? "Copied" : loadingSources ? "Loading…" : "Copy prompt"}
           </button>
@@ -312,15 +313,11 @@ export default function ExportPromptSheet({
             type="button"
             onClick={handleDownload}
             disabled={loadingSources || !prompt}
-            className="flex-1 min-w-[120px] text-xs font-medium py-2 rounded-lg border border-violet-500/50 text-violet-300 hover:bg-violet-500/10 transition-colors disabled:opacity-50"
+            className="flex-1 min-w-[120px] btn-blueprint py-2 disabled:opacity-50"
           >
             Download .md
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 text-xs py-2 rounded-lg border border-gray-700 text-gray-400 hover:text-gray-200"
-          >
+          <button type="button" onClick={onClose} className="btn-blueprint py-2 px-4">
             Close
           </button>
         </div>
