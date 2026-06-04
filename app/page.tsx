@@ -89,9 +89,9 @@ export default function Home() {
             Code<span className="text-blue-400">Map</span>
           </h1>
           <p className="text-lg text-gray-400 max-w-lg mx-auto">
-            Explore any public GitHub repository like a dataset viewer — walk
-            file-by-file with keyboard shortcuts, auto-saved progress, and an
-            AI-powered dependency graph.
+            Learn how a GitHub project works — meaningful layers (entry, API,
+            UI, pipeline) connected on a readable 2D map with color-coded
+            dependencies, folder groups, and keyboard exploration.
           </p>
           <a
             href="https://github.com/Dmallick01/codemap"
