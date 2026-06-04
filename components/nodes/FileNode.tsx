@@ -40,14 +40,6 @@ function getExtLabel(language: string | undefined): string {
   return map[language.toLowerCase()] ?? language.slice(0, 3).toUpperCase();
 }
 
-function nodeGlassBackground(roleBg: string, emphasis: "normal" | "bundle" | "selected") {
-  const mix =
-    emphasis === "selected" ? 42 : emphasis === "bundle" ? 28 : 22;
-  const tint =
-    emphasis === "bundle" ? "rgba(139, 92, 246, 0.18)" : roleBg;
-  return `color-mix(in srgb, ${tint} ${mix}%, var(--map-node-bg))`;
-}
-
 interface FileNodeProps {
   data: FileNodeData & { bundleSelected?: boolean };
   selected?: boolean;
@@ -61,30 +53,28 @@ export default memo(function FileNode({ data, selected }: FileNodeProps) {
   const fname = getFilename(data.path);
   const extLabel = getExtLabel(data.language);
 
-  const emphasis = selected ? "selected" : inBundle ? "bundle" : "normal";
-
   return (
     <div
       className={[
         "map-file-node relative rounded-lg border overflow-visible",
         "px-3 py-2.5 min-w-[200px] max-w-[240px]",
         "transition-all duration-150 cursor-pointer",
-        selected ? "map-file-node-selected ring-2 shadow-2xl" : inBundle ? "ring-1 ring-violet-400/70" : "hover:shadow-xl",
+        selected
+          ? "map-file-node-selected ring-2 shadow-2xl"
+          : inBundle
+            ? "ring-1 ring-violet-400/70"
+            : "hover:shadow-xl",
       ].join(" ")}
       style={{
-        background: nodeGlassBackground(
-          roleMeta.bg,
-          emphasis,
-        ),
         borderColor: selected
           ? roleMeta.color
           : inBundle
             ? "rgba(167,139,250,0.6)"
             : roleMeta.border,
         boxShadow: selected
-          ? `0 0 0 1px ${roleMeta.color}40, var(--map-node-shadow)`
+          ? `0 0 0 1px ${roleMeta.color}50, var(--map-node-shadow)`
           : inBundle
-            ? "0 0 12px rgba(139,92,246,0.25), var(--map-node-shadow)"
+            ? "0 0 14px rgba(139,92,246,0.2), var(--map-node-shadow)"
             : "var(--map-node-shadow)",
         ...(selected ? { ["--tw-ring-color" as string]: roleMeta.color } : {}),
       }}

@@ -10,9 +10,8 @@ interface GroupNodeProps {
 export default memo(function GroupNode({ data }: GroupNodeProps) {
   return (
     <div
-      className="relative rounded-xl border-2 border-dashed h-full w-full pointer-events-none"
+      className="map-group-node relative rounded-xl border-2 border-dashed h-full w-full pointer-events-none"
       style={{
-        background: data.bg,
         borderColor: data.border,
       }}
     >

@@ -28,6 +28,7 @@ import {
   buildUiStudioLayout,
   filterUiStudioFiles,
 } from "@/lib/graph/ui-layout";
+import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
 import { edgeStyle } from "@/lib/graph/semantic";
 import type { FileNodeData } from "@/lib/store/graph";
 import type { LayoutFileInput } from "@/lib/graph/layout";
@@ -73,6 +74,7 @@ function UiStudioInner({
   rawEdges,
 }: Props) {
   const { fitView } = useReactFlow();
+  const colorMode = useCodemapColorMode();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [exportOpen, setExportOpen] = useState(false);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -254,6 +256,7 @@ function UiStudioInner({
         nodes={displayNodes}
         edges={styledEdges}
         nodeTypes={nodeTypes}
+        colorMode={colorMode}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}

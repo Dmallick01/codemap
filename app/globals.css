@@ -17,10 +17,13 @@
   --bg-glass-strong: #1a3226;
   --canvas-bg: #0d1812;
 
-  --map-node-bg: rgba(14, 36, 26, 0.48);
-  --map-node-bg-hover: rgba(18, 44, 32, 0.58);
-  --map-node-blur: 14px;
-  --map-node-shadow: 0 4px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 var(--glass-shine);
+  /* Frosted tablets — light tint so grid shows through (not near-black) */
+  --map-node-bg: rgba(255, 255, 255, 0.1);
+  --map-node-bg-hover: rgba(255, 255, 255, 0.16);
+  --map-node-bg-selected: rgba(167, 243, 208, 0.22);
+  --map-node-blur: 18px;
+  --map-node-shadow: 0 4px 20px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --map-group-bg: rgba(74, 222, 128, 0.06);
 
   --glass-border: rgba(74, 222, 128, 0.28);
   --glass-border-bright: rgba(110, 231, 160, 0.45);
@@ -83,10 +86,12 @@
   --bg-glass-strong: #ffffff;
   --canvas-bg: #dcebe2;
 
-  --map-node-bg: rgba(255, 255, 255, 0.55);
-  --map-node-bg-hover: rgba(255, 255, 255, 0.72);
-  --map-node-blur: 12px;
-  --map-node-shadow: 0 4px 20px rgba(15, 60, 35, 0.1), inset 0 1px 0 var(--glass-shine);
+  --map-node-bg: rgba(255, 255, 255, 0.68);
+  --map-node-bg-hover: rgba(255, 255, 255, 0.82);
+  --map-node-bg-selected: rgba(187, 247, 208, 0.75);
+  --map-node-blur: 14px;
+  --map-node-shadow: 0 4px 16px rgba(15, 60, 35, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --map-group-bg: rgba(34, 197, 94, 0.08);
 
   --glass-border: rgba(22, 163, 74, 0.25);
   --glass-border-bright: rgba(21, 128, 61, 0.4);
@@ -195,15 +200,47 @@ pre,
     80px 80px;
 }
 
+/* React Flow wrappers must not paint opaque tiles behind custom nodes */
+.react-flow__node,
+.react-flow__node-groupNode,
+.react-flow__node-fileNode,
+.react-flow__node-group {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.react-flow {
+  --xy-node-background-color-default: transparent;
+  --xy-node-group-background-color-default: transparent;
+  --xy-minimap-node-background-color-default: rgba(74, 222, 128, 0.45);
+}
+
+.react-flow.dark {
+  --xy-minimap-node-background-color-default: rgba(74, 222, 128, 0.4);
+}
+
 /* Map file tablets — translucent glass over canvas */
 .map-file-node {
-  backdrop-filter: blur(var(--map-node-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--map-node-blur)) saturate(var(--glass-saturate));
+  background: var(--map-node-bg) !important;
+  backdrop-filter: blur(var(--map-node-blur)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--map-node-blur)) saturate(1.4);
   box-shadow: var(--map-node-shadow);
+}
+
+.map-file-node-selected {
+  background: var(--map-node-bg-selected) !important;
 }
 
 .map-file-node:hover:not(.map-file-node-selected) {
   background: var(--map-node-bg-hover) !important;
+}
+
+.map-group-node {
+  background: var(--map-group-bg) !important;
+  backdrop-filter: blur(var(--map-node-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--map-node-blur)) saturate(1.2);
 }
 
 .map-file-node-title {

@@ -35,6 +35,7 @@ import type {
   BundleExportContext,
 } from "@/lib/export/repurpose-prompt";
 import { useBundleSelection } from "@/hooks/useBundleSelection";
+import { useCodemapColorMode } from "@/hooks/useCodemapColorMode";
 import GraphLegend from "@/components/GraphLegend";
 import RepoOverviewPanel, {
   type RepoOverviewMeta,
@@ -110,6 +111,7 @@ function AnalyzeGraphInner({
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const { fitView } = useReactFlow();
+  const colorMode = useCodemapColorMode();
   const { selectedNode, setSelectedNode } = useGraphStore();
   const [exportOpen, setExportOpen] = useState(false);
   const [chromeOpen, setChromeOpen] = useState(false);
@@ -358,6 +360,7 @@ function AnalyzeGraphInner({
         nodes={displayNodes}
         edges={styledEdges}
         nodeTypes={nodeTypes}
+        colorMode={colorMode}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
