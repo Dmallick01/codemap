@@ -21,6 +21,7 @@ type GraphResponse = {
     mode?: string;
     overview?: RepoOverviewMeta | null;
   };
+  storageMode?: string;
   error?: string;
 };
 
@@ -72,6 +73,8 @@ export default function AnalyzePage() {
   const [reanalyzing, setReanalyzing] = useState(false);
   const [mapMode, setMapMode] = useState<string>("lite");
   const [overview, setOverview] = useState<RepoOverviewMeta | null>(null);
+  const [sourceType, setSourceType] = useState("github-lite");
+  const [edgeCount, setEdgeCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +98,8 @@ export default function AnalyzePage() {
             data.nodes.filter((n) => n.type === "fileNode").length,
         );
         setMapMode(data.meta?.mode ?? "lite");
+        setSourceType(data.sourceType ?? "github-lite");
+        setEdgeCount(data.meta?.edgeCount ?? data.edges?.length ?? 0);
         setOverview(data.meta?.overview ?? null);
         setNodes(data.nodes || []);
         setEdges(data.edges || []);
@@ -170,7 +175,9 @@ export default function AnalyzePage() {
       initialEdges={edges}
       overview={overview}
       mapMode={mapMode}
+      sourceType={sourceType}
       fileCount={fileCount}
+      edgeCount={edgeCount}
       onReanalyze={handleReanalyze}
       reanalyzing={reanalyzing}
     />

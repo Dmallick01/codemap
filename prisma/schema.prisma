@@ -12,6 +12,8 @@ model Repo {
   name        String
   url         String?
   sourceType  String
+  storageMode String   @default("snapshot") // snapshot = one JSON map; files = legacy per-file rows
+  snapshot    String?  @db.Text
   createdAt   DateTime @default(now())
   status      String   @default("pending")
   errorMsg    String?

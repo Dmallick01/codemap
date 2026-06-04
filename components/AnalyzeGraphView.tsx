@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useCallback, useState } from "react";
 import Link from "next/link";
+import MapImportExport from "@/components/MapImportExport";
 import {
   ReactFlow,
   useNodesState,
@@ -81,7 +82,9 @@ type Props = {
   initialEdges: Edge[];
   overview: RepoOverviewMeta | null;
   mapMode: string;
+  sourceType: string;
   fileCount: number;
+  edgeCount: number;
   onReanalyze: () => void;
   reanalyzing: boolean;
 };
@@ -95,7 +98,9 @@ function AnalyzeGraphInner({
   initialEdges,
   overview,
   mapMode,
+  sourceType,
   fileCount,
+  edgeCount,
   onReanalyze,
   reanalyzing,
 }: Props) {
@@ -322,6 +327,22 @@ function AnalyzeGraphInner({
             {repoStatus || "unknown"}
           </span>
         </div>
+        <MapImportExport
+          variant="export"
+          repoId={repoId}
+          repoName={repoName}
+          repoUrl={repoUrl}
+          sourceType={sourceType}
+          nodes={nodes}
+          edges={edges}
+          meta={{
+            fileCount,
+            edgeCount,
+            layout: "semantic-2d",
+            mode: mapMode === "deep" ? "deep" : "lite",
+            overview: overview as Record<string, unknown> | null,
+          }}
+        />
         {repoUrl && (
           <button
             onClick={onReanalyze}

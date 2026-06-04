@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { parseSnapshot } from "@/lib/graph/snapshot";
 import { analyzeFileSemantics, ROLE_META, type ArchRole } from "@/lib/graph/semantic";
 
 export type RepoRoleStat = {
@@ -63,10 +64,39 @@ export async function getRepoStats(repoId: string): Promise<RepoStats | null> {
       url: true,
       status: true,
       sourceType: true,
+      snapshot: true,
     },
   });
 
   if (!repo) return null;
+
+  const stored = parseSnapshot(repo.snapshot);
+  if (stored) {
+    const isLite = repo.sourceType === "github-lite";
+    const roles: RepoRoleStat[] = (stored.meta.roles ?? []).map((r) => {
+      const role = r.role as ArchRole;
+      const meta = ROLE_META[role] ?? ROLE_META.core;
+      return {
+        role,
+        count: r.count,
+        label: meta.label,
+        color: meta.color,
+      };
+    });
+    const overview = stored.meta.overview as RepoStats["overview"];
+    return {
+      repoId: repo.id,
+      name: repo.name,
+      url: repo.url ?? stored.url,
+      status: repo.status,
+      sourceType: repo.sourceType,
+      mode: stored.meta.mode ?? (isLite ? "lite" : "deep"),
+      fileCount: stored.meta.fileCount,
+      edgeCount: stored.meta.edgeCount,
+      roles,
+      overview: overview ?? null,
+    };
+  }
 
   const fileNodes = await prisma.fileNode.findMany({
     where: { repoId },

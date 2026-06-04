@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { parseSnapshot } from "@/lib/graph/snapshot";
 import { analyzeFileSemantics, ROLE_META } from "@/lib/graph/semantic";
 import { buildSemanticLayout, type LayoutFileInput } from "@/lib/graph/layout";
 import { edgeStyle } from "@/lib/graph/semantic";
 import type { Edge } from "@xyflow/react";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ repoId: string }> },
 ) {
   const { repoId } = await params;
@@ -17,6 +18,26 @@ export async function GET(
 
   if (!repo) {
     return NextResponse.json({ error: "Repo not found" }, { status: 404 });
+  }
+
+  const stored = parseSnapshot(repo.snapshot);
+  if (stored) {
+    const isLite = repo.sourceType === "github-lite";
+    return NextResponse.json({
+      repoId,
+      repoName: repo.name,
+      repoUrl: repo.url ?? stored.url,
+      status: repo.status,
+      storageMode: repo.storageMode,
+      sourceType: repo.sourceType,
+      nodes: stored.nodes,
+      edges: stored.edges,
+      meta: {
+        ...stored.meta,
+        mode: stored.meta.mode ?? (isLite ? "lite" : "deep"),
+        overview: stored.meta.overview ?? null,
+      },
+    });
   }
 
   const fileNodes = await prisma.fileNode.findMany({
@@ -39,6 +60,13 @@ export async function GET(
       },
     },
   });
+
+  if (!fileNodes.length) {
+    return NextResponse.json(
+      { error: "No map data. Re-analyze or import a .codemap.json file." },
+      { status: 404 },
+    );
+  }
 
   const edges = await prisma.edge.findMany({
     where: {
@@ -101,11 +129,8 @@ export async function GET(
   const isLite = repo.sourceType === "github-lite";
   const overview = extractLiteOverview(fileNodes);
 
-  const fileCount = fileNodes.length;
   const rolesPresent = [
-    ...new Set(
-      fileNodes.map((f) => analyzeFileSemantics(f.path).role),
-    ),
+    ...new Set(fileNodes.map((f) => analyzeFileSemantics(f.path).role)),
   ].map((role) => ({
     role,
     ...ROLE_META[role],
@@ -119,10 +144,12 @@ export async function GET(
     repoName: repo.name,
     repoUrl: repo.url,
     status: repo.status,
+    storageMode: repo.storageMode,
+    sourceType: repo.sourceType,
     nodes,
     edges: graphEdges,
     meta: {
-      fileCount,
+      fileCount: fileNodes.length,
       edgeCount: edges.length,
       roles: rolesPresent,
       layout: "semantic-2d",

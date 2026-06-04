@@ -33,12 +33,14 @@ export async function POST(req: NextRequest) {
 
     const deep = mode === "deep";
     const sourceType = deep ? "github-deep" : "github-lite";
+    const storageMode = deep ? "files" : "snapshot";
 
     const repo = await prisma.repo.create({
       data: {
         name: repoName,
         url,
         sourceType,
+        storageMode,
         status: "pending",
       },
     });
@@ -48,8 +50,8 @@ export async function POST(req: NextRequest) {
         repoId: repo.id,
         step: "fetching",
         log: deep
-          ? "Deep analysis job created (full download + parse)…"
-          : "Lite map job created (GitHub tree only, fast)…",
+          ? "Deep job (stores parsed files in DB)…"
+          : "Lite map (snapshot only — no per-file storage)…",
       },
     });
 

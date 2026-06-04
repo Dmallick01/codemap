@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import MapImportExport from "@/components/MapImportExport";
 
 interface Repo {
   id: string;
@@ -92,9 +93,13 @@ export default function Home() {
             CodeMap Lite — seconds, not minutes
           </p>
           <p className="text-lg text-gray-400 max-w-lg mx-auto">
-            Learn any GitHub repo, tour its architecture, then export selective
-            capability prompts—like gitingest, but only the pieces you choose for
-            your own project.
+            Map repos without storing every file—one portable snapshot. Import and
+            export <code className="text-gray-500">.codemap.json</code> to share or
+            reopen maps anytime.
+          </p>
+          <p className="text-sm text-gray-500 max-w-md mx-auto mt-2">
+            Lite maps do not store individual files—only one{" "}
+            <code className="text-gray-400">.codemap.json</code> snapshot.
           </p>
           <Link
             href="/library"
@@ -131,15 +136,19 @@ export default function Home() {
               {loading ? "Starting…" : "Map repo"}
             </button>
           </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <MapImportExport variant="import" />
+            <span className="text-xs text-gray-600">or map from GitHub ↓</span>
+          </div>
           <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-500">
-            <span>Default: Lite (fast)</span>
+            <span>Lite: snapshot only (no per-file DB)</span>
             <button
               type="button"
               disabled={loading || !url.trim()}
               onClick={() => startIngest(url, "deep")}
               className="text-gray-400 hover:text-gray-200 underline disabled:opacity-50"
             >
-              Deep analysis instead (download + parse)
+              Deep (stores parsed files — legacy)
             </button>
           </div>
           {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
