@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import MapImportExport from "@/components/MapImportExport";
 import RoleStrip from "@/components/RoleStrip";
 import GitHubLabShowcase from "@/components/GitHubLabShowcase";
+import PromptGeneratorShowcase from "@/components/PromptGeneratorShowcase";
 
 const DEMO_REPOS = [
   { label: "Next.js", url: "https://github.com/vercel/next.js" },
@@ -52,11 +53,12 @@ export default function Home() {
             Map any repository
           </h1>
           <p className="text-sm max-w-md mx-auto" style={{ color: "var(--text-secondary)" }}>
-            Full-screen graph. Role-colored layers. Export a portable{" "}
+            Full-screen graph. Role-colored layers. Copy agent prompts to build UI, subsystems, or
+            explain any repo like a wiki — plus export{" "}
             <code className="font-mono text-[11px]" style={{ color: "var(--text-mono)" }}>
               .codemap.json
-            </code>{" "}
-            — no per-file database storage.
+            </code>
+            .
           </p>
         </div>
 
@@ -131,12 +133,14 @@ export default function Home() {
         </form>
 
         <p className="mt-8 text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>
-          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>?</kbd> panels ·{" "}
-          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>L</kbd> GitHub Lab ·{" "}
-          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>N</kbd> /{" "}
+          On a map:{" "}
+          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>G</kbd> prompts ·{" "}
+          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>L</kbd> lab ·{" "}
+          <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>N</kbd>/
           <kbd className="px-1 rounded border" style={{ borderColor: "var(--border-default)" }}>P</kbd> tour
         </p>
 
+        <PromptGeneratorShowcase />
         <GitHubLabShowcase />
       </div>
     </main>

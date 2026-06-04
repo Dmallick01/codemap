@@ -22,6 +22,7 @@ import FileNode from "@/components/nodes/FileNode";
 import UiDesignExportSheet from "@/components/UiDesignExportSheet";
 import SecurityExportSheet from "@/components/SecurityExportSheet";
 import ElementPromptGeneratorSheet from "@/components/ElementPromptGeneratorSheet";
+import MapQuickStartBanner from "@/components/MapQuickStartBanner";
 import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
 import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import {
@@ -276,6 +277,8 @@ function UiStudioInner({
       </ReactFlow>
 
       <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-3 left-3 z-20 max-w-[260px]" />
+
+      <MapQuickStartBanner repoId={repoId} variant="ui" />
 
       <div
         className={`absolute z-20 panel-blueprint px-3 py-2 text-[10px] max-w-[220px] pointer-events-auto ${repoUrl ? "top-3 left-3" : "top-28 left-3"}`}

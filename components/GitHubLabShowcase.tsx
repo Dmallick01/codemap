@@ -23,8 +23,8 @@ export default function GitHubLabShowcase() {
           25 instruments + DESIGN.md
         </h2>
         <p className="text-xs mt-2 mx-auto max-w-md" style={{ color: "var(--text-secondary)" }}>
-          Live Octokit probes — telemetry, security advisories, auth paths, DESIGN.md
-          export in UI Studio, and security briefs on the architecture map.
+          Live Octokit probes — telemetry, security, auth paths. Pair with{" "}
+          <strong style={{ color: "var(--text-primary)" }}>G Prompts</strong> for wiki exports and build coaches.
         </p>
       </div>
 

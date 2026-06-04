@@ -170,6 +170,13 @@ function LibraryContent() {
                 </Link>
                 <div className="flex gap-2 shrink-0">
                   <Link
+                    href={`/analyze/${repo.id}`}
+                    className="btn-blueprint"
+                    title="Open map — press G for prompt generator"
+                  >
+                    Prompts
+                  </Link>
+                  <Link
                     href={`/analyze/${repo.id}/ui`}
                     className="btn-blueprint"
                   >

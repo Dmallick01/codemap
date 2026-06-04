@@ -229,10 +229,13 @@ export default function ProcessingPage() {
                 </p>
                 <ul className="text-left text-xs detail-muted mb-6 max-w-md mx-auto space-y-1 panel-blueprint p-4">
                   <li>
-                    <strong className="detail-secondary">Architecture map</strong> — tour files, ⌬ GitHub Lab (L), Security brief
+                    <strong className="detail-secondary">Prompts (G)</strong> — build UI elements, subsystems (agents/LLM), or explain this repo as a wiki
                   </li>
                   <li>
-                    <strong className="detail-secondary">UI Studio</strong> — export UI prompts + DESIGN.md (E), security brief (S)
+                    <strong className="detail-secondary">Architecture map</strong> — tour files, GitHub Lab (L), security brief
+                  </li>
+                  <li>
+                    <strong className="detail-secondary">UI Studio</strong> — DESIGN.md export (E), UI prompts
                   </li>
                 </ul>
                 <div className="flex flex-wrap gap-3 justify-center">

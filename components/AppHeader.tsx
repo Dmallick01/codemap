@@ -70,7 +70,7 @@ export default function AppHeader() {
 
       {(isAnalyze || isUiStudio) && repoId && (
         <span className="hidden sm:inline text-[9px] font-mono px-2 py-0.5 rounded border glass-chip" style={{ color: "var(--accent)" }}>
-          {isUiStudio ? "G build element · E export · L lab" : "G build · ⌬ Lab · L"}
+          {isUiStudio ? "G prompts · E export · L lab" : "G prompts · ⌬ Lab · L"}
         </span>
       )}
 

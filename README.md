@@ -56,7 +56,9 @@ Deep mode: `POST /api/ingest` with `{ "url": "...", "mode": "deep" }`.
 | `L` | GitHub Lab (25 instruments) |
 | `Esc` | Close panels / sheets |
 
-**UI Studio** (`/analyze/[repoId]/ui`): `G` build element prompt · `E` export UI + DESIGN.md · `S` security brief · `L` Lab.
+**UI Studio** (`/analyze/[repoId]/ui`): `G` prompts · `E` export UI + DESIGN.md · `S` security brief · `L` Lab.
+
+**Architecture map** (`/analyze/[repoId]`): `G` prompts · `L` Lab · `N`/`P` tour · `?` panels · Security in HUD.
 
 **Repo prompt generator** (`G`): three export modes —
 - **Build UI element** — “Ask me how to build elements like: …” (components, layouts)

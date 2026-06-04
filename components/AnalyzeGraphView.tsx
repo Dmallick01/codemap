@@ -30,6 +30,7 @@ import MapCapabilitiesBanner from "@/components/MapCapabilitiesBanner";
 import GitHubLabDrawer from "@/components/github-lab/GitHubLabDrawer";
 import SecurityExportSheet from "@/components/SecurityExportSheet";
 import ElementPromptGeneratorSheet from "@/components/ElementPromptGeneratorSheet";
+import MapQuickStartBanner from "@/components/MapQuickStartBanner";
 import type {
   RepurposeExportContext,
   BundleExportContext,
@@ -373,6 +374,8 @@ function AnalyzeGraphInner({
       </ReactFlow>
 
       <MapCapabilitiesBanner repoUrl={repoUrl} className="absolute top-28 left-3 z-20 max-w-sm" />
+
+      <MapQuickStartBanner repoId={repoId} variant="map" />
 
       <FocusMapHUD
         repoName={repoName}
